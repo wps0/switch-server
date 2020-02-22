@@ -1,7 +1,9 @@
 package pl.wieczorkep._switch.server.view;
 
 public interface View {
-    void info(String message);
+    <T> void info(T message);
 
     void error(String message);
+
+    int readInt(String label);
 }

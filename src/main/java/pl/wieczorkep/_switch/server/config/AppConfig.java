@@ -9,12 +9,12 @@ import pl.wieczorkep._switch.server.view.View;
 public class AppConfig {
     private View view;
     private Storage storage;
-    private Cache configCache;
+    private Cache<String, String> configCache;
 
     public AppConfig(View view) {
         this.view = view;
         this.storage = new InMemoryStorage();
-        this.configCache = new LFUCache(25);
+        this.configCache = new LFUCache<>(25);
     }
 
 
