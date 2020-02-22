@@ -24,7 +24,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>pl.wieczorkep._switch.server.Main</mainClass>
+                            <mainClass>pl.wieczorkep._switch.server.SwitchSound</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
