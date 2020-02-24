@@ -1,6 +1,9 @@
 package pl.wieczorkep._switch.server.config;
 
-import java.io.*;
+import lombok.SneakyThrows;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Calendar;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -10,7 +13,8 @@ import static pl.wieczorkep._switch.server.config.Action.Type;
 public final class ActionUtils {
     private ActionUtils() {}
 
-    public static Action loadAction(File actionFile) throws IOException {
+    @SneakyThrows
+    public static Action loadAction(File actionFile) {
         Properties actionProperties = new Properties();
         actionProperties.load(new FileInputStream(actionFile));
 

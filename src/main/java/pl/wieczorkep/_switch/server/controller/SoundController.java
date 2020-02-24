@@ -58,7 +58,7 @@ public class SoundController implements LineListener {
         System.out.println(event.getType().toString());
 //        System.out.println(event.getSource());
         System.out.println(event.getFramePosition());
-        System.out.println(event.getLine().toString());
+        System.out.println(event.getLine().getLineInfo().toString());
     }
 
 //    public static void main(String[] args) throws LineUnavailableException, IOException, UnsupportedAudioFileException {

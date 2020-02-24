@@ -97,8 +97,9 @@ public final class FileSystemUtils {
                     .orElse("");
 
             actionFiles = Arrays.stream(actions.split(","))
+                    .filter(s -> s.length() > 0)
                     .map(actionId -> actionId + ".action")
-                    .forEach(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
+                    .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
