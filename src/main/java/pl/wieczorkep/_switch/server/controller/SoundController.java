@@ -11,7 +11,7 @@ import java.io.IOException;
 public class SoundController implements LineListener {
 
     public static void main(String[] args) {
-        File audioFile = new File("D:\\ytdl\\output\\Just Chillax - Enjoy The Flight (ft. Fred).wav");
+        File audioFile = new File("D:\\ytdl\\output\\Szanty - Bitwa.wav");
 
         try {
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
