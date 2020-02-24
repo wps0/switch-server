@@ -8,6 +8,7 @@ import java.util.Properties;
 public class AppConfig {
     private View view;
     private Properties props;
+    // todo: przerobic to na jakiegos seta czy mape
     private Properties actions;
 
     public static final String CONFIG_DIR = "config_dir";
@@ -34,7 +35,6 @@ public class AppConfig {
 
     public static Properties getDefaultProperties() {
         Properties defaultProperties = new Properties();
-
         // --- Storage ---
         defaultProperties.setProperty(CONFIG_DIR, System.getProperty("user.home") + File.separatorChar + "SwitchSoundServer");
         defaultProperties.setProperty(SONGS_DIR, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "sounds");

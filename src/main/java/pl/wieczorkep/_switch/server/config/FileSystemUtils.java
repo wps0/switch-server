@@ -5,6 +5,8 @@ import java.nio.file.FileSystemException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pl.wieczorkep._switch.server.config.ActionUtils.loadAction;
+
 public final class FileSystemUtils {
     private FileSystemUtils() {}
 
@@ -55,8 +57,8 @@ public final class FileSystemUtils {
 //                    writer.write("# 8.50=lesson");
                     writer.write("# Each action file has to be registered here\n");
                     writer.write("# Example:\n");
-                    writer.write("# active=lessons,breaks,weather,szczesliwynumerek");
-                    writer.write("# This example registers the files named lessons.action, breaks.actions etc.");
+                    writer.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
+                    writer.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
                     writer.write("active=");
                 }
 
@@ -85,7 +87,7 @@ public final class FileSystemUtils {
     }
 
     public static void loadActions(AppConfig appConfig) throws IOException {
-        List<String> actionFiles;
+        List<Action> actionFiles;
 
         try (BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(new File(appConfig.get(AppConfig.ACTIONS_FILE))))) {
             Properties activeActions = new Properties();
@@ -95,8 +97,12 @@ public final class FileSystemUtils {
                     .orElse("");
 
             actionFiles = Arrays.stream(actions.split(","))
-                    .map(s -> s + ".action")
+                    .map(actionId -> actionId + ".action")
+                    .forEach(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
                     .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            appConfig.getView().error(e.getLocalizedMessage());
         }
     }
 }
