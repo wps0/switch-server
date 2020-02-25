@@ -1,6 +1,5 @@
 package pl.wieczorkep._switch.server.controller;
 
-
 import pl.wieczorkep._switch.server.view.ConsoleView;
 import pl.wieczorkep._switch.server.view.View;
 

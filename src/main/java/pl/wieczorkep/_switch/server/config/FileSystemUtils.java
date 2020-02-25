@@ -1,5 +1,7 @@
 package pl.wieczorkep._switch.server.config;
 
+import lombok.Cleanup;
+
 import java.io.*;
 import java.nio.file.FileSystemException;
 import java.util.*;
@@ -35,12 +37,12 @@ public final class FileSystemUtils {
         try {
             // BEGIN config file
             if (!configFile.exists()) {
-
                 status &= configFile.createNewFile();
 
-                try (BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile))) {
-                    AppConfig.getDefaultProperties().store(configOutputStream, "siema to komentarz jest");
-                }
+                @Cleanup
+                BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
+                AppConfig.getDefaultProperties().store(configOutputStream, "siema to komentarz jest");
+
             } else {
                 loadConfig(appConfig);
             }
@@ -50,17 +52,17 @@ public final class FileSystemUtils {
             if (!actionsFile.exists()) {
                 status &= actionsFile.createNewFile();
 
-                try (FileWriter writer = new FileWriter(actionsFile)) {
+                @Cleanup
+                FileWriter writer = new FileWriter(actionsFile);
 //                    writer.write("# Includes the execution times of the tasks specified under " + appConfig.get(AppConfig.ACTIONS_DIR) + "\n");
 //                    writer.write("# Example:\n");
 //                    writer.write("#   ---  fire the actions specified in the break.action at 8.45");
 //                    writer.write("# 8.50=lesson");
-                    writer.write("# Each action file has to be registered here\n");
-                    writer.write("# Example:\n");
-                    writer.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
-                    writer.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
-                    writer.write("active=");
-                }
+                writer.write("# Each action file has to be registered here\n");
+                writer.write("# Example:\n");
+                writer.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
+                writer.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
+                writer.write("active=");
 
 
             } else {
@@ -69,7 +71,7 @@ public final class FileSystemUtils {
             // END actions file
 
 
-        }  catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             appConfig.getView().error(e.toString());
         }
@@ -81,29 +83,27 @@ public final class FileSystemUtils {
     }
 
     public static void loadConfig(AppConfig appConfig) throws IOException {
-        try (BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(new File(appConfig.get(AppConfig.CONFIG_FILE))))) {
-            appConfig.getProps().load(configInputStream);
-        }
+        @Cleanup
+        BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.CONFIG_FILE)));
+        appConfig.getProps().load(configInputStream);
     }
 
     public static void loadActions(AppConfig appConfig) throws IOException {
-        List<Action> actionFiles;
+        @Cleanup
+        BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.ACTIONS_FILE)));
 
-        try (BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(new File(appConfig.get(AppConfig.ACTIONS_FILE))))) {
-            Properties activeActions = new Properties();
-            activeActions.load(actionsInputStream);
+        Properties activeActions = new Properties();
+        activeActions.load(actionsInputStream);
 
-            String actions = (String) Optional.ofNullable(activeActions.get("active"))
-                    .orElse("");
+        String actions = (String) Optional.ofNullable(activeActions.get("active"))
+                .orElse("");
 
-            actionFiles = Arrays.stream(actions.split(","))
-                    .filter(s -> s.length() > 0)
-                    .map(actionId -> actionId + ".action")
-                    .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-            appConfig.getView().error(e.getLocalizedMessage());
-        }
+        List<Action> actionFiles = Arrays.stream(actions.split(","))
+                .filter(s -> s.length() > 0)
+                .map(actionId -> actionId + ".action")
+                .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
+                .collect(Collectors.toList());
+
+        // ToDo: action loading
     }
 }
