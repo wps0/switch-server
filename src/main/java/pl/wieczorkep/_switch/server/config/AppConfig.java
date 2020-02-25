@@ -1,14 +1,18 @@
 package pl.wieczorkep._switch.server.config;
 
+import lombok.Getter;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
 import java.util.Properties;
 
 public class AppConfig {
+    @Getter
     private View view;
+    @Getter
     private Properties props;
     // todo: przerobic to na jakiegos seta czy mape
+    @Getter
     private Properties actions;
 
     public static final String CONFIG_DIR = "config_dir";
@@ -29,10 +33,17 @@ public class AppConfig {
         this.actions = new Properties();
     }
 
-    public View getView() {
-        return view;
+    public String get(String key) {
+        return props.getProperty(key);
     }
 
+    public String getAction(String key) {
+        return actions.getProperty(key);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Static methods
+    ///////////////////////////////////////////////////////////////////////////
     public static Properties getDefaultProperties() {
         Properties defaultProperties = new Properties();
         // --- Storage ---
@@ -49,21 +60,5 @@ public class AppConfig {
         defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
 
         return defaultProperties;
-    }
-
-    public Properties getProps() {
-        return props;
-    }
-
-    public String get(String key) {
-        return props.getProperty(key);
-    }
-
-    public String getAction(String key) {
-        return actions.getProperty(key);
-    }
-
-    public Properties getActions() {
-        return actions;
     }
 }

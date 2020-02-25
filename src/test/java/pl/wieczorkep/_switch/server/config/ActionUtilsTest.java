@@ -30,6 +30,6 @@ class ActionUtilsTest {
         assertEquals(
                 Optional.ofNullable(
                         days.get(day.toUpperCase())).orElse("-1"), returnedDay);
-        System.out.println(Optional.ofNullable(days.get(day)).orElse("-1") + " -- "+ returnedDay);
+        System.out.println(Optional.ofNullable(days.get(day)).orElse("-1") + " -- " + returnedDay);
     }
 }
