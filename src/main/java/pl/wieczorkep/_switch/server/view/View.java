@@ -5,5 +5,9 @@ public interface View {
 
     void error(String message);
 
+    void config(String message);
+
+    void debug(String message);
+
     int readInt(String label);
 }

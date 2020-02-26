@@ -4,10 +4,8 @@ import lombok.Cleanup;
 
 import java.io.*;
 import java.nio.file.FileSystemException;
-import java.util.*;
-import java.util.stream.Collectors;
 
-import static pl.wieczorkep._switch.server.config.ActionUtils.loadAction;
+import static pl.wieczorkep._switch.server.config.ActionUtils.loadActions;
 
 public final class FileSystemUtils {
     private FileSystemUtils() {}
@@ -39,9 +37,8 @@ public final class FileSystemUtils {
             if (!configFile.exists()) {
                 status &= configFile.createNewFile();
 
-                @Cleanup
-                BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
-                AppConfig.getDefaultProperties().store(configOutputStream, "siema to komentarz jest");
+                @Cleanup BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
+                AppConfig.getDefaultProperties().store(configOutputStream, "The main config file.\nRefer to siema for siema");
 
             } else {
                 loadConfig(appConfig);
@@ -52,8 +49,7 @@ public final class FileSystemUtils {
             if (!actionsFile.exists()) {
                 status &= actionsFile.createNewFile();
 
-                @Cleanup
-                FileWriter writer = new FileWriter(actionsFile);
+                @Cleanup FileWriter writer = new FileWriter(actionsFile);
 //                    writer.write("# Includes the execution times of the tasks specified under " + appConfig.get(AppConfig.ACTIONS_DIR) + "\n");
 //                    writer.write("# Example:\n");
 //                    writer.write("#   ---  fire the actions specified in the break.action at 8.45");
@@ -83,27 +79,7 @@ public final class FileSystemUtils {
     }
 
     public static void loadConfig(AppConfig appConfig) throws IOException {
-        @Cleanup
-        BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.CONFIG_FILE)));
+        @Cleanup BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.CONFIG_FILE)));
         appConfig.getProps().load(configInputStream);
-    }
-
-    public static void loadActions(AppConfig appConfig) throws IOException {
-        @Cleanup
-        BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.ACTIONS_FILE)));
-
-        Properties activeActions = new Properties();
-        activeActions.load(actionsInputStream);
-
-        String actions = (String) Optional.ofNullable(activeActions.get("active"))
-                .orElse("");
-
-        List<Action> actionFiles = Arrays.stream(actions.split(","))
-                .filter(s -> s.length() > 0)
-                .map(actionId -> actionId + ".action")
-                .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
-                .collect(Collectors.toList());
-
-        // ToDo: action loading
     }
 }

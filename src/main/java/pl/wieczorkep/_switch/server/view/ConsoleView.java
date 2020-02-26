@@ -35,10 +35,21 @@ public class ConsoleView implements View {
     }
 
     @Override
+    public void config(String message) {
+        consoleLogger.finer(message);
+    }
+
+    @Override
+    public void debug(String message) {
+        consoleLogger.fine(message);
+    }
+
+    @Override
     public int readInt(String label) {
         System.out.format("%s: ", label);
         int value = scanner.nextInt();
         scanner.nextLine();
         return value;
     }
+
 }

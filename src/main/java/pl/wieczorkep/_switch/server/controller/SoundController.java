@@ -49,7 +49,6 @@ public class SoundController implements LineListener {
             System.out.println("Siema line unavailable");
         }
 
-
     }
 
     @Override

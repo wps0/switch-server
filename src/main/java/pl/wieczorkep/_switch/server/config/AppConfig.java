@@ -4,7 +4,7 @@ import lombok.Getter;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
-import java.util.Properties;
+import java.util.*;
 
 public class AppConfig {
     @Getter
@@ -13,7 +13,7 @@ public class AppConfig {
     private Properties props;
     // todo: przerobic to na jakiegos seta czy mape
     @Getter
-    private Properties actions;
+    private TreeMap<String, Action> actions;
 
     public static final String CONFIG_DIR = "config_dir";
     public static final String SONGS_DIR = "songs_dir";
@@ -30,15 +30,20 @@ public class AppConfig {
     public AppConfig(View view) {
         this.view = view;
         this.props = new Properties(getDefaultProperties());
-        this.actions = new Properties();
+        this.actions = new TreeMap<>();
     }
 
     public String get(String key) {
         return props.getProperty(key);
     }
 
-    public String getAction(String key) {
-        return actions.getProperty(key);
+    public Action getAction(String key) {
+        return actions.get(key);
+    }
+
+    public void putActions(Map<? extends String, ? extends Action> actionMap) {
+        actions.putAll(actionMap);
+        view.debug("Loaded " + actionMap.size() + " actions");
     }
 
     ///////////////////////////////////////////////////////////////////////////

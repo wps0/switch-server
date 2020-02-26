@@ -1,33 +1,37 @@
 package pl.wieczorkep._switch.server.config;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 
 @EqualsAndHashCode
 public class Action {
-    @Getter
-    private byte executionHour;
-    @Getter
-    private byte executionMinute;
-    /**
-     * @see java.util.Calendar
-     */
-    @Getter
-    private int[] executionDays;
+    private ExecutionTime executionTime;
     @Getter
     private Type type;
     @Getter
-    private String targetFilePath;
+    private final String actionId;
 
-    public Action(byte executionHour, byte executionMinute, int[] executionDays, Type type, String targetFilePath) {
-        this.executionHour = executionHour;
-        this.executionMinute = executionMinute;
-        this.executionDays = executionDays;
+    public Action(byte executionHour, byte executionMinute, int[] executionDays, Type type, final String actionId) {
+        this.executionTime = new ExecutionTime(executionHour, executionMinute, executionDays);
         this.type = type;
-        this.targetFilePath = targetFilePath;
+        this.actionId = actionId;
     }
 
     enum Type {
         PLAY_SOUND;
+    }
+
+    @AllArgsConstructor
+    @EqualsAndHashCode
+    @ToString
+    public static class ExecutionTime {
+        @Getter
+        private byte executionHour;
+        @Getter
+        private byte executionMinute;
+        /**
+         * @see java.util.Calendar
+         */
+        @Getter
+        private int[] executionDays;
     }
 }
