@@ -2,21 +2,29 @@ package pl.wieczorkep._switch.server.config;
 
 import lombok.*;
 
+import java.time.DayOfWeek;
+
 @EqualsAndHashCode
 public class Action {
+    @Getter
     private ExecutionTime executionTime;
     @Getter
     private Type type;
     @Getter
     private final String actionId;
 
-    public Action(byte executionHour, byte executionMinute, int[] executionDays, Type type, final String actionId) {
+    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, final String actionId) {
         this.executionTime = new ExecutionTime(executionHour, executionMinute, executionDays);
         this.type = type;
         this.actionId = actionId;
     }
 
-    enum Type {
+//    @Override
+//    public int compareTo(@NotNull Action otherAction) {
+//        int dayDifference = this.executionTime.executionDays
+//    }
+
+    public enum Type {
         PLAY_SOUND;
     }
 
@@ -32,6 +40,6 @@ public class Action {
          * @see java.util.Calendar
          */
         @Getter
-        private int[] executionDays;
+        private DayOfWeek[] executionDays;
     }
 }

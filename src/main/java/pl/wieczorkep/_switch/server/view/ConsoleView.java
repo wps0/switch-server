@@ -1,7 +1,7 @@
 package pl.wieczorkep._switch.server.view;
 
 import lombok.Getter;
-import pl.wieczorkep._switch.server.menu.Menu;
+import pl.wieczorkep._switch.server.view.menu.Menu;
 
 import java.util.Scanner;
 import java.util.logging.Level;

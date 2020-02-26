@@ -2,6 +2,7 @@ package pl.wieczorkep._switch.server.config;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import pl.wieczorkep._switch.server.utils.ActionUtils;
 
 import java.util.Optional;
 import java.util.Properties;

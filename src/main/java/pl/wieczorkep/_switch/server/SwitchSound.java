@@ -1,8 +1,8 @@
 package pl.wieczorkep._switch.server;
 
 import pl.wieczorkep._switch.server.config.AppConfig;
-import pl.wieczorkep._switch.server.config.FileSystemUtils;
 import pl.wieczorkep._switch.server.controller.SoundController;
+import pl.wieczorkep._switch.server.utils.FileSystemUtils;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.nio.file.FileSystemException;

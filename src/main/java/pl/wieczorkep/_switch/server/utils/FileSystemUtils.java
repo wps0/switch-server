@@ -1,11 +1,12 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.utils;
 
 import lombok.Cleanup;
+import pl.wieczorkep._switch.server.config.AppConfig;
 
 import java.io.*;
 import java.nio.file.FileSystemException;
 
-import static pl.wieczorkep._switch.server.config.ActionUtils.loadActions;
+import static pl.wieczorkep._switch.server.utils.ActionUtils.loadActions;
 
 public final class FileSystemUtils {
     private FileSystemUtils() {}

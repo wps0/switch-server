@@ -1,9 +1,13 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.utils;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import pl.wieczorkep._switch.server.config.Action;
+import pl.wieczorkep._switch.server.config.AppConfig;
 
 import java.io.*;
+import java.time.DayOfWeek;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,7 +29,8 @@ public final class ActionUtils {
                 Stream.of(actionProperties
                         .getProperty("days", "")
                         .split(","))
-                        .mapToInt(ActionUtils::decodeDay)
+                        .map(String::trim)
+                        .map(ActionUtils::decodeDay)
                         .distinct()
                         .toArray(),
                 Type.valueOf(actionProperties.getProperty("type", "PLAY_SOUND")),
@@ -51,24 +56,23 @@ public final class ActionUtils {
                 .collect(Collectors.toMap(Action::getActionId, Function.identity())));
     }
 
-    public static int decodeDay(String day) {
+    public static DayOfWeek decodeDay(String day) {
         switch (day.toUpperCase()) {
             case "M":
-                return Calendar.MONDAY;
+                return DayOfWeek.MONDAY;
             case "TU":
-                return Calendar.TUESDAY;
+                return DayOfWeek.TUESDAY;
             case "W":
-                return Calendar.WEDNESDAY;
+                return DayOfWeek.WEDNESDAY;
             case "TH":
-                return Calendar.THURSDAY;
+                return DayOfWeek.THURSDAY;
             case "F":
-                return Calendar.FRIDAY;
+                return DayOfWeek.FRIDAY;
             case "SA":
-                return Calendar.SATURDAY;
+                return DayOfWeek.SATURDAY;
             case "SU":
-                return Calendar.SUNDAY;
-            default:
-                return -1;
+                return DayOfWeek.SUNDAY;
         }
+        throw new DateTimeParseException("Day not recognised. Supported values: {M, TU, W, TH, F, SA, SU}", day, -1);
     }
 }

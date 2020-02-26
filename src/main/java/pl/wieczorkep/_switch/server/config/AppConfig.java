@@ -4,16 +4,17 @@ import lombok.Getter;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class AppConfig {
     @Getter
     private View view;
     @Getter
     private Properties props;
-    // todo: przerobic to na jakiegos seta czy mape
     @Getter
-    private TreeMap<String, Action> actions;
+    private ConcurrentSkipListMap<String, Action> actions;
 
     public static final String CONFIG_DIR = "config_dir";
     public static final String SONGS_DIR = "songs_dir";
@@ -30,7 +31,7 @@ public class AppConfig {
     public AppConfig(View view) {
         this.view = view;
         this.props = new Properties(getDefaultProperties());
-        this.actions = new TreeMap<>();
+        this.actions = new ConcurrentSkipListMap<>();
     }
 
     public String get(String key) {

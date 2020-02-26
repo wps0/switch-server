@@ -1,9 +1,9 @@
-package pl.wieczorkep._switch.server.menu;
+package pl.wieczorkep._switch.server.view.menu;
 
 import pl.wieczorkep._switch.server.view.View;
 
-
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 public class Menu {
     private final View view;
