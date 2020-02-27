@@ -13,7 +13,7 @@ public class Action {
     @Getter
     private final String actionId;
 
-    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, final String actionId) {
+    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, final @NonNull String actionId) {
         this.executionTime = new ExecutionTime(executionHour, executionMinute, executionDays);
         this.type = type;
         this.actionId = actionId;

@@ -12,6 +12,6 @@ public class ConcurrencyManager {
 
     public ConcurrencyManager() {
         // Day, hour, minute. SwitchSound.getConfig().getActions().values()
-        this.executionQueue = new PriorityQueue<>()
+//        this.executionQueue = new PriorityQueue<>()
     }
 }
