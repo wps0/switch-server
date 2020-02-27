@@ -1,6 +1,8 @@
 package pl.wieczorkep._switch.server.config;
 
 import lombok.*;
+import pl.wieczorkep._switch.server.config.extractor.ArgumentsExtractor;
+import pl.wieczorkep._switch.server.config.extractor.SoundPathExtractor;
 
 import java.time.DayOfWeek;
 
@@ -11,12 +13,19 @@ public class Action {
     @Getter
     private Type type;
     @Getter
+    private String typeArguments;
+    @Getter
     private final String actionId;
 
-    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, final @NonNull String actionId) {
-        this.executionTime = new ExecutionTime(executionHour, executionMinute, executionDays);
+    public Action(ExecutionTime executionTime, Type type, String typeArguments, String actionId) {
+        this.executionTime = executionTime;
         this.type = type;
+        this.typeArguments = typeArguments;
         this.actionId = actionId;
+    }
+
+    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, String typeArguments, final @NonNull String actionId) {
+        this(new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments, actionId);
     }
 
 //    @Override
@@ -24,8 +33,13 @@ public class Action {
 //        int dayDifference = this.executionTime.executionDays
 //    }
 
+    // ToDo: Type for notifying admins via email, client app on the windows computer.
+    @AllArgsConstructor
     public enum Type {
-        PLAY_SOUND;
+        PLAY_SOUND(new SoundPathExtractor());
+
+        @Getter
+        private ArgumentsExtractor argumentsExtractor;
     }
 
     @AllArgsConstructor

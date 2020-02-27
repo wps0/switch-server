@@ -5,7 +5,9 @@ import pl.wieczorkep._switch.server.config.AppConfig;
 
 import java.io.*;
 import java.nio.file.FileSystemException;
+import java.util.Arrays;
 
+import static pl.wieczorkep._switch.server.config.Action.Type;
 import static pl.wieczorkep._switch.server.utils.ActionUtils.loadActions;
 
 public final class FileSystemUtils {
@@ -46,22 +48,50 @@ public final class FileSystemUtils {
             }
             // END config file
 
+            // BEGIN example actions file
+            File exampleActionsFile = new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + "example.props.example");
+            if (!exampleActionsFile.exists()) {
+                @Cleanup FileWriter exampleActionWriter = new FileWriter(exampleActionsFile);
+
+                exampleActionWriter.write("# This is an example actions file\n");
+                exampleActionWriter.write("# Each comment line starts with the '#' char\n");
+                exampleActionWriter.write("#\n");
+
+                exampleActionWriter.write("# Run your task at 8\n");
+                exampleActionWriter.write("# Acceptable values: 0-23\n");
+                exampleActionWriter.write("#hour=8\n");
+
+                exampleActionWriter.write("#\n");
+                exampleActionWriter.write("# Run your task at the specific minute\n");
+                exampleActionWriter.write("# Acceptable values: 0-23\n");
+                exampleActionWriter.write("#minute=8\n");
+
+                exampleActionWriter.write("#\n");
+                exampleActionWriter.write("# Run your task at the specified days\n");
+                exampleActionWriter.write("# Acceptable values: {M, TU, W, TH, F, SA, SU}\n");
+                exampleActionWriter.write("#days=M,TU,W,TH,F\n");
+
+                exampleActionWriter.write("#\n");
+                exampleActionWriter.write("# Type of the action\n");
+                exampleActionWriter.write("# Acceptable values: " + Arrays.toString(Type.values()).replace('[', '{').replace(']', '}') + "\n");
+                exampleActionWriter.write("#type=PLAY_SOUND\n");
+            }
+            // END example actions file
+
             // BEGIN actions file
             if (!actionsFile.exists()) {
                 status &= actionsFile.createNewFile();
 
-                @Cleanup FileWriter writer = new FileWriter(actionsFile);
+                @Cleanup FileWriter registerWriter = new FileWriter(actionsFile);
 //                    writer.write("# Includes the execution times of the tasks specified under " + appConfig.get(AppConfig.ACTIONS_DIR) + "\n");
 //                    writer.write("# Example:\n");
 //                    writer.write("#   ---  fire the actions specified in the break.action at 8.45");
 //                    writer.write("# 8.50=lesson");
-                writer.write("# Each action file has to be registered here\n");
-                writer.write("# Example:\n");
-                writer.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
-                writer.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
-                writer.write("active=");
-
-
+                registerWriter.write("# Each action file has to be registered here\n");
+                registerWriter.write("# Example:\n");
+                registerWriter.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
+                registerWriter.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
+                registerWriter.write("active=");
             } else {
                 loadActions(appConfig);
             }

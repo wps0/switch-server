@@ -55,6 +55,7 @@ public final class ActionUtils {
                             .distinct()
                             .toArray(),
                     Type.valueOf(actionProperties.getProperty("type", "PLAY_SOUND")),
+                    actionProperties.getProperty("typeArguments"),
                     actionFile.getName()
             );
         } catch (Exception e) {
