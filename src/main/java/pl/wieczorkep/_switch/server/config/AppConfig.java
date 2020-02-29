@@ -4,9 +4,8 @@ import lombok.Getter;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AppConfig {
     @Getter
@@ -14,7 +13,9 @@ public class AppConfig {
     @Getter
     private Properties props;
     @Getter
-    private ConcurrentSkipListMap<String, Action> actions;
+    private TreeMap<String, Action> actions;
+    @Getter
+    private ReentrantLock lock;
 
     public static final String CONFIG_DIR = "config_dir";
     public static final String SONGS_DIR = "songs_dir";
@@ -31,7 +32,8 @@ public class AppConfig {
     public AppConfig(View view) {
         this.view = view;
         this.props = new Properties(getDefaultProperties());
-        this.actions = new ConcurrentSkipListMap<>();
+        this.actions = new TreeMap<>();
+        this.lock = new ReentrantLock();
     }
 
     public String get(String key) {
@@ -39,13 +41,31 @@ public class AppConfig {
     }
 
     public Action getAction(String key) {
-        return actions.get(key);
+        lock.lock();
+        try {
+            return actions.get(key);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public void putActions(Map<? extends String, ? extends Action> actionMap) {
-        actions.putAll(actionMap);
-        view.debug("Loaded " + actionMap.size() + " actions");
+        lock.lock();
+        try {
+            actions.putAll(actionMap);
+            view.info("Loaded " + actionMap.size() + " actions");
+        } finally {
+            lock.unlock();
+        }
     }
+//
+//    public void subscribeForNewActions() throws InterruptedException {
+//
+//    }
+//
+//    public void siema() {
+//        System.out.println("OKS");
+//    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Static methods

@@ -32,10 +32,12 @@ public class SoundController implements LineListener {
 
 
             audioClip.start();
+
             View view = new ConsoleView();
             while (audioClip.isActive()) {
                 int input = view.readInt("kozak polecenie plox o ile do przodu?");
                 audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + input * 1000_000L);
+                //SwitchSound.getConfig().siema();
             }
 
         } catch (UnsupportedAudioFileException e) {

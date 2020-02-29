@@ -14,7 +14,7 @@ public class ConsoleView implements View {
 
     public ConsoleView() {
         this.consoleLogger = Logger.getLogger(ConsoleView.class.getName());
-        consoleLogger.setLevel(Level.INFO);
+        consoleLogger.setLevel(Level.ALL);
         scanner = new Scanner(System.in);
         menu = new Menu(this);
     }
