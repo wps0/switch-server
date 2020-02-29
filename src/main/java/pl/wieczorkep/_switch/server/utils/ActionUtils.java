@@ -5,10 +5,10 @@ import lombok.SneakyThrows;
 import pl.wieczorkep._switch.server.SwitchSound;
 import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.utils.factory.ExceptionFactory;
 
 import java.io.*;
 import java.time.DayOfWeek;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -60,11 +60,13 @@ public final class ActionUtils {
             );
         } catch (Exception e) {
             SwitchSound.getConfig().getView().error("Could not load " + actionFile.getName() + "; " + e.getLocalizedMessage());
+            e.printStackTrace();
         }
         return null;
     }
 
     public static DayOfWeek decodeDay(String day) {
+        System.out.println("Day: " + day);
         switch (day.toUpperCase()) {
             case "M":
                 return DayOfWeek.MONDAY;
@@ -81,7 +83,11 @@ public final class ActionUtils {
             case "SU":
                 return DayOfWeek.SUNDAY;
             default:
-                throw new DateTimeParseException("Day not recognised. Supported values: {M, TU, W, TH, F, SA, SU}", day, -1);
+                throw ExceptionFactory.createDateTimeException(day);
         }
+    }
+
+    public static String encodeDays(DayOfWeek[] days) {
+        return "";
     }
 }
