@@ -47,13 +47,13 @@ public final class ActionUtils {
             return new Action(
                     Byte.parseByte(actionProperties.getProperty("hour", "0")),
                     Byte.parseByte(actionProperties.getProperty("minute", "0")),
-                    (DayOfWeek[]) Stream.of(actionProperties
+                    Stream.of(actionProperties
                             .getProperty("days", "")
                             .split(","))
                             .map(String::trim)
                             .map(ActionUtils::decodeDay)
                             .distinct()
-                            .toArray(),
+                            .toArray(DayOfWeek[]::new),
                     Type.valueOf(actionProperties.getProperty("type", "PLAY_SOUND")),
                     actionProperties.getProperty("typeArguments"),
                     actionFile.getName()
@@ -88,6 +88,35 @@ public final class ActionUtils {
     }
 
     public static String encodeDays(DayOfWeek[] days) {
-        return "";
+        StringBuilder daysStringBuilder = new StringBuilder();
+
+        for (DayOfWeek day : days) {
+            switch (day) {
+                case MONDAY:
+                    daysStringBuilder.append("M");
+                    break;
+                case TUESDAY:
+                    daysStringBuilder.append("TU");
+                    break;
+                case WEDNESDAY:
+                    daysStringBuilder.append("W");
+                    break;
+                case THURSDAY:
+                    daysStringBuilder.append("TH");
+                    break;
+                case FRIDAY:
+                    daysStringBuilder.append("F");
+                    break;
+                case SATURDAY:
+                    daysStringBuilder.append("SA");
+                    break;
+                case SUNDAY:
+                    daysStringBuilder.append("SU");
+                default:
+            }
+            daysStringBuilder.append(',');
+        }
+
+        return daysStringBuilder.toString().substring(0, daysStringBuilder.length() - 1);
     }
 }

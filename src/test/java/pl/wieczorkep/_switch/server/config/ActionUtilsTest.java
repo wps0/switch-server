@@ -7,17 +7,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import pl.wieczorkep._switch.server.utils.ActionUtils;
 import pl.wieczorkep._switch.server.utils.factory.ExceptionFactory;
 
-import java.io.File;
+import java.time.DayOfWeek;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 class ActionUtilsTest {
     private static final Properties days = new Properties();
-    ;
 
     @BeforeAll
     static void beforeAll() {
@@ -46,15 +44,22 @@ class ActionUtilsTest {
         assertThrows(DateTimeParseException.class, () -> ActionUtils.decodeDay(day));
     }
 
+    @Test
+    void encodeDay_shouldReturnValidDayString() {
+        DayOfWeek[] days = {DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.SUNDAY, DayOfWeek.THURSDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY};
+        // when
+        String returnedDay = ActionUtils.encodeDays(days);
+        // then
+        assertEquals("F,M,SU,TH,TU,W", returnedDay);
+    }
 
     @Test
     void loadActions() {
+        fail("Not yet implemented");
     }
 
     @Test
     void loadAction() {
-        File actionFile = mock(File.class);
-        ActionUtils.loadAction(actionFile);
-
+        fail("Not yet implemented");
     }
 }
