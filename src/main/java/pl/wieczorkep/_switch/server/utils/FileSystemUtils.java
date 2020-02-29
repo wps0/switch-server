@@ -1,6 +1,7 @@
 package pl.wieczorkep._switch.server.utils;
 
 import lombok.Cleanup;
+import pl.wieczorkep._switch.server.config.ActionFactory;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
 import java.io.*;
@@ -49,7 +50,8 @@ public final class FileSystemUtils {
             // BEGIN example actions file
             File exampleActionsFile = new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + "example.action.example");
             if (!exampleActionsFile.exists()) {
-//                ActionFactory
+                ActionFactory actionFactory = new ActionFactory();
+                actionFactory.createActionFile(appConfig);
             }
             // END example actions file
 

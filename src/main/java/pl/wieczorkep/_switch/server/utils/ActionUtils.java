@@ -88,7 +88,7 @@ public final class ActionUtils {
     }
 
     public static String encodeDays(DayOfWeek[] days) {
-        StringBuilder daysStringBuilder = new StringBuilder();
+        StringBuilder daysStringBuilder = new StringBuilder("{");
 
         for (DayOfWeek day : days) {
             switch (day) {
@@ -117,6 +117,6 @@ public final class ActionUtils {
             daysStringBuilder.append(',');
         }
 
-        return daysStringBuilder.toString().substring(0, daysStringBuilder.length() - 1);
+        return daysStringBuilder.substring(0, daysStringBuilder.length() - 1) + '}';
     }
 }
