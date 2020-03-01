@@ -1,6 +1,7 @@
 package pl.wieczorkep._switch.server.view;
 
 import lombok.Getter;
+import pl.wieczorkep._switch.server.concurrent.ConcurrencyUtils;
 import pl.wieczorkep._switch.server.view.menu.Menu;
 
 import java.util.Scanner;
@@ -14,7 +15,7 @@ public class ConsoleView implements View {
 
     public ConsoleView() {
         this.consoleLogger = Logger.getLogger(ConsoleView.class.getName());
-        consoleLogger.setLevel(Level.ALL);
+        consoleLogger.setLevel(Level.FINEST);
         scanner = new Scanner(System.in);
         menu = new Menu(this);
     }
@@ -42,6 +43,11 @@ public class ConsoleView implements View {
     @Override
     public void debug(String message) {
         consoleLogger.fine(message);
+    }
+
+    @Override
+    public void debug(Thread thread, String message) {
+        debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " " + message);
     }
 
     @Override

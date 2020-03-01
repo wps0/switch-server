@@ -32,15 +32,16 @@ class FileSystemUtilsTest {
     }
 
     @Test
-//    @DisplayName("initializeConfig(): should throw NullPointerException when AppConfig parameter is null")
+    @DisplayName("should throw NullPointerException when AppConfig parameter is null")
     void initializeConfig_filesNotExists() {
         // given
+
+        // when
         when(appConfig.get(AppConfig.CONFIG_DIR)).thenReturn(System.getProperty("user.home") + File.separatorChar + "SwitchSoundServer");
         when(appConfig.get(AppConfig.CONFIG_FILE)).thenReturn(
                 System.getProperty("user.home") + File.separatorChar + "SwitchSoundServer" + File.separatorChar + "config.props"
         );
 
-        // when
         // then
         assertThrows(NullPointerException.class, () -> {
             FileSystemUtils.initializeConfig(appConfig);

@@ -14,6 +14,10 @@ public class Action {
     private Type type;
     @Getter
     private String typeArguments;
+    /**
+     * An action id specified by the user (generally the path to an action inside the action dir,
+     * including '.action' file extension).
+     */
     @Getter
     private final String actionId;
 

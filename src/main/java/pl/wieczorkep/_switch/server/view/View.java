@@ -9,5 +9,7 @@ public interface View {
 
     void debug(String message);
 
+    void debug(Thread thread, String message);
+
     int readInt(String label);
 }

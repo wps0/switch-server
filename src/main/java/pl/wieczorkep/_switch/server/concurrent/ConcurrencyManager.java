@@ -1,5 +1,7 @@
 package pl.wieczorkep._switch.server.concurrent;
 
+import pl.wieczorkep._switch.server.config.AppConfig;
+
 import static pl.wieczorkep._switch.server.concurrent.ConcurrencyUtils.prettifyThreadName;
 
 public class ConcurrencyManager {
@@ -7,16 +9,18 @@ public class ConcurrencyManager {
 //    private PriorityQueue<Action> executionQueue;
 //    private Thread nextActionThread;
     private Thread actionExecutorThread;
+    private AppConfig appConfig;
 
 
-    public ConcurrencyManager() {
+    public ConcurrencyManager(AppConfig appConfig) {
+        this.appConfig = appConfig;
         // Day, hour, minute. SwitchSound.getConfig().getActions().values()
 //        this.executionQueue = new PriorityQueue<>()
 //        executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     public void init() {
-        actionExecutorThread = new Thread(new ActionExecutorThread());
+        actionExecutorThread = new Thread(new ActionExecutorThread(appConfig));
         actionExecutorThread.setName(prettifyThreadName(actionExecutorThread));
         actionExecutorThread.start();
 

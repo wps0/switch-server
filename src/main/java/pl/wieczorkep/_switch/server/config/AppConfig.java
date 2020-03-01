@@ -5,6 +5,7 @@ import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class AppConfig {
@@ -14,9 +15,12 @@ public class AppConfig {
     private Properties props;
     @Getter
     private TreeMap<String, Action> actions;
+    // ==!== Concurrency support ==!==
     @Getter
-    private ReentrantLock lock;
+    private ReentrantLock actionsLock;
+    private Condition actionsChangeCondition;
 
+    // ==!== Config variables ==!==
     public static final String CONFIG_DIR = "config_dir";
     public static final String SONGS_DIR = "songs_dir";
     public static final String CONFIG_FILE = "config_file";
@@ -33,7 +37,8 @@ public class AppConfig {
         this.view = view;
         this.props = new Properties(getDefaultProperties());
         this.actions = new TreeMap<>();
-        this.lock = new ReentrantLock();
+        this.actionsLock = new ReentrantLock();
+        this.actionsChangeCondition = this.actionsLock.newCondition();
     }
 
     public String get(String key) {
@@ -41,31 +46,54 @@ public class AppConfig {
     }
 
     public Action getAction(String key) {
-        lock.lock();
+        actionsLock.lock();
         try {
             return actions.get(key);
         } finally {
-            lock.unlock();
+            actionsLock.unlock();
         }
     }
 
+    public void putAction(Action action) {
+        actionsLock.lock();
+        try {
+            actions.put(action.getActionId(), action);
+            view.info("Loaded 1 action.");
+            actionsChangeCondition.signalAll();
+        } finally {
+            actionsLock.unlock();
+        }
+    }
+
+
     public void putActions(Map<? extends String, ? extends Action> actionMap) {
-        lock.lock();
+        actionsLock.lock();
         try {
             actions.putAll(actionMap);
             view.info("Loaded " + actionMap.size() + " actions");
+            actionsChangeCondition.signalAll();
         } finally {
-            lock.unlock();
+            actionsLock.unlock();
         }
     }
-//
-//    public void subscribeForNewActions() throws InterruptedException {
-//
-//    }
-//
-//    public void siema() {
-//        System.out.println("OKS");
-//    }
+
+    public void subscribeActionsChangeCondition() throws InterruptedException {
+        actionsLock.lock();
+        try {
+            actionsChangeCondition.await();
+        } finally {
+            actionsLock.unlock();
+        }
+    }
+
+    public void siema() {
+        actionsLock.lock();
+        try {
+            actionsChangeCondition.signalAll();
+        } finally {
+            actionsLock.unlock();
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Static methods

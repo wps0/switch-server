@@ -1,5 +1,7 @@
 package pl.wieczorkep._switch.server.controller;
 
+import pl.wieczorkep._switch.server.SwitchSound;
+import pl.wieczorkep._switch.server.config.ActionFactory;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 import pl.wieczorkep._switch.server.view.View;
 
@@ -10,7 +12,7 @@ import java.io.IOException;
 public class SoundController implements LineListener {
 
     public static void main(String[] args) {
-        File audioFile = new File("D:\\ytdl\\output\\Szanty - Bitwa.wav");
+        File audioFile = new File("D:\\ytdl\\output\\Taco Hemingway - Zapach Perfum SzUsty Blend.wav");
 
         try {
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
@@ -35,9 +37,18 @@ public class SoundController implements LineListener {
 
             View view = new ConsoleView();
             while (audioClip.isActive()) {
-                int input = view.readInt("kozak polecenie plox o ile do przodu?");
+                int input = view.readInt("CMD >>>");
                 audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + input * 1000_000L);
-                //SwitchSound.getConfig().siema();
+
+                if (input == 0) {
+                    SwitchSound.getConfig().siema();
+                }
+
+                if (input == 1) {
+                    ActionFactory actionFactory = new ActionFactory();
+                    SwitchSound.getConfig().putAction(actionFactory.createExampleAction());
+                }
+
             }
 
         } catch (UnsupportedAudioFileException e) {

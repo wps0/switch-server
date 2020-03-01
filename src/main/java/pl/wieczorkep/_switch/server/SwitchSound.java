@@ -10,7 +10,7 @@ import java.nio.file.FileSystemException;
 
 public class SwitchSound {
     private static AppConfig config = new AppConfig(new ConsoleView());
-    private static ConcurrencyManager concurrencyManager = new ConcurrencyManager();
+    private static ConcurrencyManager concurrencyManager = new ConcurrencyManager(config);
 
     // ToDo: cmd arguments handling
     public static void main(String[] args) {
