@@ -20,7 +20,7 @@ public class ConcurrencyManager {
     }
 
     public void init() {
-        actionExecutorThread = new Thread(new ActionExecutorThread(appConfig));
+        actionExecutorThread = new Thread(new ActionSupervisorThread(appConfig));
         actionExecutorThread.setName(prettifyThreadName(actionExecutorThread));
         actionExecutorThread.start();
 

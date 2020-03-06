@@ -29,6 +29,11 @@ public class AppConfig {
     public static final String ACTIONS_FILE = "actions.registry";
     public static final String ACTIONS_DIR = "actions.dir";
 
+    /**
+     * Max deviation of the specified execution time in seconds
+     */
+    public static final String ACTION_EXECUTION_TIME_MAX_DEVIATION = "acitons.maxDeviation";
+
     // --- Execution properties ---
     public static final String BELL_ENABLE = "bell.enable";
     public static final String BELL_SOUND_FILE = "bell.sound_file";
@@ -108,6 +113,7 @@ public class AppConfig {
         // -- Specific files --
         defaultProperties.setProperty(CONFIG_FILE, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "config.props");
         defaultProperties.setProperty(ACTIONS_FILE, defaultProperties.getProperty(ACTIONS_DIR) + File.separatorChar + "actions.props");
+        defaultProperties.setProperty(ACTION_EXECUTION_TIME_MAX_DEVIATION, "30");
 
         // --- Execution properties ---
         defaultProperties.setProperty(BELL_ENABLE, "false");
