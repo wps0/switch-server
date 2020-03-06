@@ -38,15 +38,14 @@ public class ActionSupervisorThread implements Runnable {
             appConfig.getView().debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
 
             try {
-                appConfig.subscribeActionsChangeCondition();
-
+                appConfig.awaitActionChange();
 
                 Map.Entry<String, Action> firstEntry = appConfig.getActions().firstEntry();
                 if (firstEntry != null && firstEntry.getValue() != scheduledAction) {
                     Action firstAction = firstEntry.getValue();
 
                     System.out.printf("Pierwsza akcja: %s; Type: %s(args: %s); ExecutionTime: %s",
-                            firstAction.getActionId(), firstAction.getType(), firstAction.getTypeArguments(),
+                            firstAction.getActionId(), firstAction.getType(), firstAction.getRawArguments(),
                             firstAction.getExecutionTime().toString());
 
                     if (scheduledAction == null) {

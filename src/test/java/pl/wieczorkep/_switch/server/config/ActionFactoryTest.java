@@ -28,7 +28,7 @@ class ActionFactoryTest {
         assertNotNull(exampleAction.getActionId(), "Action ID should not be null");
         assertNotNull(exampleAction.getType(), "Action Type should not be null");
         assertNotNull(exampleAction.getExecutionTime(), "Execution time should not be null");
-        assertNotNull(exampleAction.getTypeArguments(), "Type arguments should not be null");
+        assertNotNull(exampleAction.getRawArguments(), "Type arguments should not be null");
         assertNotNull(exampleAction.getExecutionTime().getExecutionDays(), "Execution days should not be null");
     }
 

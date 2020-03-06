@@ -41,7 +41,7 @@ public class SoundController implements LineListener {
                 audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + input * 1000_000L);
 
                 if (input == 0) {
-                    SwitchSound.getConfig().siema();
+                    SwitchSound.getConfig().signalActionChange();
                 }
 
                 if (input == 1) {

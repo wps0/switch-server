@@ -6,15 +6,15 @@ import lombok.SneakyThrows;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.InvalidParameterException;
+import java.util.Optional;
 import java.util.Properties;
 
 public class SoundPathExtractor implements ArgumentsExtractor {
     @SneakyThrows
     @Override
-    public Properties extract(@NonNull final String configString) {
+    public Optional<Properties> extract(@NonNull final String configString) {
         if (configString.length() == 0) {
-            throw new InvalidParameterException("Arguments are not set");
+            return Optional.empty();
         }
 
         Properties arguments = new Properties();
@@ -24,6 +24,6 @@ public class SoundPathExtractor implements ArgumentsExtractor {
             throw new FileNotFoundException("File " + configString + " does not exists.");
         }
 
-        return arguments;
+        return Optional.of(arguments);
     }
 }

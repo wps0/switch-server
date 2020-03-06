@@ -66,7 +66,7 @@ public class ActionFactory {
         actionWriter.write("# Type of the action\n");
         actionWriter.write("# Acceptable values: " + Arrays.toString(Action.Type.values()).replace('[', '{').replace(']', '}') + "\n");
         actionWriter.write("#type=" + fromAction.getType().name() + "\n"); // ToDo: test if this works correctly
-        actionWriter.write("#typeArguments=" + fromAction.getTypeArguments() + "\n");
+        actionWriter.write("#typeArguments=" + fromAction.getRawArguments() + "\n");
 
         return Optional.of(actionFile);
     }

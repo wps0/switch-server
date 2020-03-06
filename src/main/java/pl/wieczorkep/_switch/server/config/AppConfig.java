@@ -82,7 +82,7 @@ public class AppConfig {
         }
     }
 
-    public void subscribeActionsChangeCondition() throws InterruptedException {
+    public void awaitActionChange() throws InterruptedException {
         actionsLock.lock();
         try {
             actionsChangeCondition.await();
@@ -91,7 +91,7 @@ public class AppConfig {
         }
     }
 
-    public void siema() {
+    public void signalActionChange() {
         actionsLock.lock();
         try {
             actionsChangeCondition.signalAll();

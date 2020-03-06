@@ -1,6 +1,8 @@
 package pl.wieczorkep._switch.server.config;
 
 import lombok.*;
+import pl.wieczorkep._switch.server.config.executor.ActionExecutor;
+import pl.wieczorkep._switch.server.config.executor.SoundExecutor;
 import pl.wieczorkep._switch.server.config.extractor.ArgumentsExtractor;
 import pl.wieczorkep._switch.server.config.extractor.SoundPathExtractor;
 
@@ -8,6 +10,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 @EqualsAndHashCode
 public class Action {
@@ -15,13 +18,18 @@ public class Action {
     private ExecutionTime executionTime;
     @Getter
     private Type type;
-    @Getter
     private String typeArguments;
+    /**
+     * Contains extracted arguments.
+     * ToDo: add live reload support
+     */
+    private Properties arguments;
     /**
      * An action id specified by the user (generally the path to an action inside the action dir,
      * including '.action' file extension).
      */
     @Getter
+    @NonNull
     private final String actionId;
 
     public Action(ExecutionTime executionTime, Type type, String typeArguments, String actionId) {
@@ -35,6 +43,19 @@ public class Action {
         this(new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments, actionId);
     }
 
+    public String getRawArguments() {
+        return typeArguments;
+    }
+
+    @NonNull
+    public Properties getArguments() {
+        if (arguments == null) {
+            arguments = type.getArgumentsExtractor().extract(typeArguments)
+                    .orElse(new Properties());
+        }
+        return arguments;
+    }
+
 //    @Override
 //    public int compareTo(@NotNull Action otherAction) {
 //        int dayDifference = this.executionTime.executionDays
@@ -43,10 +64,13 @@ public class Action {
     // ToDo: Type for notifying admins via email, client app on the windows computer.
     @AllArgsConstructor
     public enum Type {
-        PLAY_SOUND(new SoundPathExtractor());
+        PLAY_SOUND(new SoundPathExtractor(), new SoundExecutor());
 
         @Getter
         private ArgumentsExtractor argumentsExtractor;
+
+        @Getter
+        private ActionExecutor actionExecutor;
     }
 
     @RequiredArgsConstructor
