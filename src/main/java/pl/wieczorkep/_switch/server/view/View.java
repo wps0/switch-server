@@ -7,9 +7,11 @@ public interface View {
 
     void config(String message);
 
-    void debug(String message);
+    <T> void debug(T message);
 
     void debug(Thread thread, String message);
 
     int readInt(String label);
+
+    void init();
 }

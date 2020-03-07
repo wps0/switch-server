@@ -1,16 +1,17 @@
 package pl.wieczorkep._switch.server.concurrent;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
 @RequiredArgsConstructor
-public class ActionExecutorThread implements Runnable {
+public class ActionExecutorThread extends Thread {
     private final AppConfig appConfig;
+    @Getter
+    @NonNull
     private final Action targetAction;
     @Getter
-    private boolean status;
+    private boolean successful;
     @Getter
     private boolean finished;
 
@@ -20,11 +21,12 @@ public class ActionExecutorThread implements Runnable {
         try {
             appConfig.getView().info("Executing action " + targetAction.getActionId() + " with arguments " + targetAction.getArguments().toString());
 
-            status = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
-            
+            successful = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
+
         } catch (Exception e) {
-            appConfig.getView().error("Failed to execute action " + targetAction.getActionId() + "");
-            status = false;
+            appConfig.getView().error("Failed to execute action " + targetAction.getActionId() + ": " + e.getLocalizedMessage());
+            e.printStackTrace();
+            successful = false;
         } finally {
             finished = true;
             appConfig.signalActionChange();

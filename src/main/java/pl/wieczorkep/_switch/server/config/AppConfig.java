@@ -13,7 +13,6 @@ public class AppConfig {
     private View view;
     @Getter
     private Properties props;
-    @Getter
     private TreeMap<String, Action> actions;
     // ==!== Concurrency support ==!==
     @Getter
@@ -40,20 +39,43 @@ public class AppConfig {
 
     public AppConfig(View view) {
         this.view = view;
-        this.props = new Properties(getDefaultProperties());
         this.actions = new TreeMap<>();
         this.actionsLock = new ReentrantLock();
         this.actionsChangeCondition = this.actionsLock.newCondition();
     }
 
+
+    /**
+     * Should always be called before using the other methods
+     */
+    public void init() {
+        this.props = new Properties(getDefaultProperties());
+        view.init();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Storage operations
+    ///////////////////////////////////////////////////////////////////////////
     public String get(String key) {
         return props.getProperty(key);
     }
 
+    //
+    // === Actions ===
+    //
     public Action getAction(String key) {
         actionsLock.lock();
         try {
             return actions.get(key);
+        } finally {
+            actionsLock.unlock();
+        }
+    }
+
+    public Map.Entry<String, Action> getActionsFirstEntry() {
+        actionsLock.lock();
+        try {
+            return actions.firstEntry();
         } finally {
             actionsLock.unlock();
         }
@@ -70,7 +92,6 @@ public class AppConfig {
         }
     }
 
-
     public void putActions(Map<? extends String, ? extends Action> actionMap) {
         actionsLock.lock();
         try {
@@ -82,6 +103,9 @@ public class AppConfig {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Multithreading
+    ///////////////////////////////////////////////////////////////////////////
     public void awaitActionChange() throws InterruptedException {
         actionsLock.lock();
         try {
@@ -100,6 +124,9 @@ public class AppConfig {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Static methods
+    ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     // Static methods
     ///////////////////////////////////////////////////////////////////////////

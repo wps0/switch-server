@@ -5,28 +5,41 @@ import pl.wieczorkep._switch.server.concurrent.ConcurrencyUtils;
 import pl.wieczorkep._switch.server.view.menu.Menu;
 
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class ConsoleView implements View {
     private final Logger consoleLogger;
     private Scanner scanner;
-    private @Getter Menu menu;
+    private @Getter
+    Menu menu;
 
     public ConsoleView() {
+        this.scanner = new Scanner(System.in);
+        this.menu = new Menu(this);
         this.consoleLogger = Logger.getLogger(ConsoleView.class.getName());
-        consoleLogger.setLevel(Level.FINEST);
-        scanner = new Scanner(System.in);
-        menu = new Menu(this);
+    }
+
+    @Override
+    public void init() {
+        // == logger init ==
+        consoleLogger.setUseParentHandlers(false);
+
+        Handler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        consoleLogger.addHandler(consoleHandler);
+
+        consoleLogger.setLevel(Level.ALL);
+        consoleLogger.info("Logging level is: " + consoleLogger.getLevel());
     }
 
     @Override
     public <T> void info(T message) {
         String msg;
-        if (message instanceof String)
+        if (message instanceof String) {
             msg = (String) message;
-        else
+        } else {
             msg = String.valueOf(message);
+        }
         consoleLogger.info(msg);
     }
 
@@ -41,8 +54,14 @@ public class ConsoleView implements View {
     }
 
     @Override
-    public void debug(String message) {
-        consoleLogger.fine(message);
+    public <T> void debug(T message) {
+        String msg;
+        if (message instanceof String) {
+            msg = (String) message;
+        } else {
+            msg = String.valueOf(message);
+        }
+        consoleLogger.fine(msg);
     }
 
     @Override

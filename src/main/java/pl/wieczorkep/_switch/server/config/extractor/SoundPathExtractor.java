@@ -1,6 +1,5 @@
 package pl.wieczorkep._switch.server.config.extractor;
 
-import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import java.io.FileNotFoundException;
@@ -12,8 +11,8 @@ import java.util.Properties;
 public class SoundPathExtractor implements ArgumentsExtractor {
     @SneakyThrows
     @Override
-    public Optional<Properties> extract(@NonNull final String configString) {
-        if (configString.length() == 0) {
+    public Optional<Properties> extract(final String configString) {
+        if (configString == null || configString.length() == 0) {
             return Optional.empty();
         }
 

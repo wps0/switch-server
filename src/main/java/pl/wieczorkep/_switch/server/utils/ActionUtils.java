@@ -49,6 +49,8 @@ public final class ActionUtils {
                     Byte.parseByte(actionProperties.getProperty("minute", "0")),
                     Stream.of(actionProperties
                             .getProperty("days", "")
+                            .replace('{', ' ')
+                            .replace('}', ' ')
                             .split(","))
                             .map(String::trim)
                             .map(ActionUtils::decodeDay)

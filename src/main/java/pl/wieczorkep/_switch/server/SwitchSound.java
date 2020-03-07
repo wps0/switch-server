@@ -2,7 +2,6 @@ package pl.wieczorkep._switch.server;
 
 import pl.wieczorkep._switch.server.concurrent.ConcurrencyManager;
 import pl.wieczorkep._switch.server.config.AppConfig;
-import pl.wieczorkep._switch.server.controller.SoundController;
 import pl.wieczorkep._switch.server.utils.FileSystemUtils;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
@@ -14,6 +13,7 @@ public class SwitchSound {
 
     // ToDo: cmd arguments handling
     public static void main(String[] args) {
+        config.init();
         try {
             FileSystemUtils.initializeConfig(config);
         } catch (FileSystemException e) {
@@ -22,7 +22,7 @@ public class SwitchSound {
         concurrencyManager.init();
 
 
-        SoundController.main(args);
+//        SoundController.main(args);
 
 
     }
