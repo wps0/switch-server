@@ -8,7 +8,10 @@ public class SoundExecutor implements ActionExecutor {
     @Override
     public boolean execute(Properties arguments) {
         // ToDo: ... execute sound action
-        SoundController.main(null);
+
+        SoundController soundController = new SoundController();
+        soundController.main(arguments.getProperty("songPath"));
+
         return false;
     }
 }

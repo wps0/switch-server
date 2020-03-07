@@ -1,7 +1,6 @@
 package pl.wieczorkep._switch.server.controller;
 
-import pl.wieczorkep._switch.server.SwitchSound;
-import pl.wieczorkep._switch.server.config.ActionFactory;
+import lombok.NonNull;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 import pl.wieczorkep._switch.server.view.View;
 
@@ -11,8 +10,8 @@ import java.io.IOException;
 
 public class SoundController implements LineListener {
 
-    public static void main(String[] args) {
-        File audioFile = new File("D:\\ytdl\\output\\Taco Hemingway - Zapach Perfum SzUsty Blend.wav");
+    public void main(@NonNull String soundFile) {
+        File audioFile = new File(soundFile);
 
         try {
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
@@ -39,15 +38,15 @@ public class SoundController implements LineListener {
             while (audioClip.isActive()) {
                 int input = view.readInt("CMD >>>");
                 audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + input * 1000_000L);
-
-                if (input == 0) {
-                    SwitchSound.getConfig().signalActionChange();
-                }
-
-                if (input == 1) {
-                    ActionFactory actionFactory = new ActionFactory();
-                    SwitchSound.getConfig().putAction(actionFactory.createExampleAction());
-                }
+//
+//                if (input == 0) {
+//                    SwitchSound.getConfig().signalActionChange();
+//                }
+//
+//                if (input == 1) {
+//                    ActionFactory actionFactory = new ActionFactory();
+//                    SwitchSound.getConfig().putAction(actionFactory.createExampleAction());
+//                }
 
             }
 
@@ -70,6 +69,10 @@ public class SoundController implements LineListener {
 //        System.out.println(event.getSource());
         System.out.println(event.getFramePosition());
         System.out.println(event.getLine().getLineInfo().toString());
+
+        if (event.getType() == LineEvent.Type.STOP) {
+            Thread.currentThread().interrupt();
+        }
     }
 
 //    public static void main(String[] args) throws LineUnavailableException, IOException, UnsupportedAudioFileException {

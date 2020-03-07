@@ -40,8 +40,17 @@ public final class ActionUtils {
 
     @SneakyThrows
     public static Action loadAction(File actionFile) {
+        FileReader reader = new FileReader(actionFile);
+        StringBuilder fileStringBuilder = new StringBuilder();
+
+        int character;
+        while ((character = reader.read()) != -1) {
+            fileStringBuilder.append((char) character);
+        }
+
+        String fileContents = fileStringBuilder.toString().replace("\\", "\\\\");
         Properties actionProperties = new Properties();
-        actionProperties.load(new FileInputStream(actionFile));
+        actionProperties.load(new StringReader(fileContents));
 
         try {
             return new Action(
@@ -68,7 +77,6 @@ public final class ActionUtils {
     }
 
     public static DayOfWeek decodeDay(String day) {
-        System.out.println("Day: " + day);
         switch (day.toUpperCase()) {
             case "M":
                 return DayOfWeek.MONDAY;

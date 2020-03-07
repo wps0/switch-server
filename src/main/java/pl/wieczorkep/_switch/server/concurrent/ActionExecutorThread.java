@@ -19,7 +19,7 @@ public class ActionExecutorThread extends Thread {
     public void run() {
 //        int maxDeviation = Integer.parseInt(appConfig.get(ACTION_EXECUTION_TIME_MAX_DEVIATION));
         try {
-            appConfig.getView().info("Executing action " + targetAction.getActionId() + " with arguments " + targetAction.getArguments().toString());
+            appConfig.getView().info("Executing action " + targetAction.getActionId() + " (arguments " + targetAction.getArguments().toString() + ")");
 
             successful = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
 
@@ -28,6 +28,7 @@ public class ActionExecutorThread extends Thread {
             e.printStackTrace();
             successful = false;
         } finally {
+            appConfig.getView().info("Action " + targetAction.getActionId() + " finished its execution (arguments " + targetAction.getArguments().toString() + ")");
             finished = true;
             appConfig.signalActionChange();
         }
