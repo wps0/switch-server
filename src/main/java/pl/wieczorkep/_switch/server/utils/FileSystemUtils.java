@@ -1,8 +1,8 @@
 package pl.wieczorkep._switch.server.utils;
 
 import lombok.Cleanup;
-import pl.wieczorkep._switch.server.config.ActionFactory;
 import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.utils.factory.ActionFactory;
 
 import java.io.*;
 import java.nio.file.FileSystemException;

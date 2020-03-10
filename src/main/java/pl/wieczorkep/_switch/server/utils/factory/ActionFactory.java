@@ -1,7 +1,9 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.utils.factory;
 
 import lombok.Cleanup;
 import lombok.NonNull;
+import pl.wieczorkep._switch.server.config.Action;
+import pl.wieczorkep._switch.server.config.AppConfig;
 import pl.wieczorkep._switch.server.utils.ActionUtils;
 
 import java.io.*;

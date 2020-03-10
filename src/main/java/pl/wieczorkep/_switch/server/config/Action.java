@@ -6,11 +6,13 @@ import pl.wieczorkep._switch.server.config.executor.SoundExecutor;
 import pl.wieczorkep._switch.server.config.extractor.ArgumentsExtractor;
 import pl.wieczorkep._switch.server.config.extractor.SoundPathExtractor;
 
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @EqualsAndHashCode
 public class Action {
@@ -90,10 +92,10 @@ public class Action {
 
         private Entry<DayOfWeek, Boolean> canExecuteCache;
 
-        public boolean canExecuteToday() {
-            DayOfWeek today = LocalDateTime.now().getDayOfWeek();
+        public boolean canExecuteToday(final LocalDateTime now) {
+            DayOfWeek today = now.getDayOfWeek();
 
-            if (canExecuteCache.getKey() == today) {
+            if (canExecuteCache != null && canExecuteCache.getKey() == today) {
                 return canExecuteCache.getValue();
             }
 
@@ -108,26 +110,58 @@ public class Action {
             return false;
         }
 
-        public DayOfWeek getClosestExecutionDay() {
-            if (canExecuteToday()) {
-                return LocalDateTime.now().getDayOfWeek();
+        public DayOfWeek getClosestExecutionDay(final LocalDateTime now) {
+            if (canExecuteToday(now)) {
+                return now.getDayOfWeek();
             }
 
-            DayOfWeek today = LocalDateTime.now().getDayOfWeek();
-            DayOfWeek closestExecutionDay = null;
-            int minNextDayDelay = Integer.MAX_VALUE;
+            if (executionDays == null) {
+                return null;
+            }
+
+            DayOfWeek closestDay = null;
+            int minPeriod = Integer.MAX_VALUE;
 
             for (DayOfWeek day : executionDays) {
-                if (day.getValue() < today.getValue()) {
-                    int nextDayDelay = 7 - today.getValue() + day.getValue();
-
-                    if (minNextDayDelay < nextDayDelay) {
-                        minNextDayDelay = nextDayDelay;
-                        closestExecutionDay = day;
-                    }
+                Period period = Period.between(now.toLocalDate(), now.with(TemporalAdjusters.nextOrSame(day)).toLocalDate());
+                if (period.getDays() < minPeriod) {
+                    minPeriod = period.getDays();
+                    closestDay = day;
                 }
             }
-            return closestExecutionDay;
+
+            return closestDay;
+        }
+
+        public long getTime(TimeUnit timeUnit) {
+            return getTime(timeUnit, LocalDateTime.now());
+        }
+
+        /**
+         * Gets amount of time to the next run.
+         *
+         * @param timeUnit the time value.
+         * @param now      the current moment.
+         * @return -1 if the closest day is null.
+         */
+        public long getTime(TimeUnit timeUnit, final LocalDateTime now) {
+            final DayOfWeek closestDay = getClosestExecutionDay(now);
+
+            if (closestDay == null) {
+                return -1;
+            }
+
+            LocalDateTime nextExecution = now
+                    .minusHours(now.getHour())
+                    .minusMinutes(now.getMinute())
+                    .minusSeconds(now.getSecond())
+                    .with(TemporalAdjusters.nextOrSame(closestDay))
+                    .plusHours(executionHour)
+                    .plusMinutes(executionMinute);
+
+            return timeUnit.convert(
+                    ChronoUnit.MICROS.between(now, nextExecution),
+                    TimeUnit.MICROSECONDS);
         }
 
 //        public static int calculateDeviation(ExecutionTime toTime) {

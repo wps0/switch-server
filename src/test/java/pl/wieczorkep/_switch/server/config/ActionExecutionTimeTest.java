@@ -1,5 +1,7 @@
 package pl.wieczorkep._switch.server.config;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 class ActionExecutionTimeTest {
@@ -26,6 +28,12 @@ class ActionExecutionTimeTest {
 
         // then
         assertEquals(dayOfWeekList.contains(NOW.getDayOfWeek()), canExecute);
+    }
+
+    @Test
+    @Disabled
+    void getTime() {
+        fail("not yet implemented");
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -1,14 +1,23 @@
 package pl.wieczorkep._switch.server.controller;
 
 import lombok.NonNull;
-import pl.wieczorkep._switch.server.view.ConsoleView;
-import pl.wieczorkep._switch.server.view.View;
 
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SoundController implements LineListener {
+    private ReentrantLock musicLock;
+    private Thread thisThread;
+    private Condition musicCondition;
+
+    public SoundController() {
+        this.musicLock = new ReentrantLock();
+        this.musicCondition = musicLock.newCondition();
+        this.thisThread = Thread.currentThread();
+    }
 
     public void main(@NonNull String soundFile) {
         File audioFile = new File(soundFile);
@@ -31,24 +40,18 @@ public class SoundController implements LineListener {
             System.out.println("Dlugosc: " + clipLength + "s probkowana " + sampleRate + "Hz");
             System.out.println("Dlugosc z micro seconds: " + audioClip.getMicrosecondLength() / 1000_000.0 + "s");
 
-
             audioClip.start();
+            audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + 149 * 1000_000L);
 
-            View view = new ConsoleView();
-            while (audioClip.isActive()) {
-                int input = view.readInt("CMD >>>");
-                audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + input * 1000_000L);
-//
-//                if (input == 0) {
-//                    SwitchSound.getConfig().signalActionChange();
-//                }
-//
-//                if (input == 1) {
-//                    ActionFactory actionFactory = new ActionFactory();
-//                    SwitchSound.getConfig().putAction(actionFactory.createExampleAction());
-//                }
-
+            while (true) {
+                musicLock.lock();
+                try {
+                    musicCondition.await();
+                } finally {
+                    musicLock.unlock();
+                }
             }
+
 
         } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
@@ -59,19 +62,21 @@ public class SoundController implements LineListener {
         } catch (LineUnavailableException e) {
             e.printStackTrace();
             System.out.println("Siema line unavailable");
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted");
         }
 
     }
 
     @Override
     public void update(LineEvent event) {
-        System.out.println(event.getType().toString());
+        System.out.println(event.getType());
 //        System.out.println(event.getSource());
-        System.out.println(event.getFramePosition());
-        System.out.println(event.getLine().getLineInfo().toString());
+//        System.out.println(event.getFramePosition());
+//        System.out.println(event.getLine().getLineInfo().toString());
 
         if (event.getType() == LineEvent.Type.STOP) {
-            Thread.currentThread().interrupt();
+            thisThread.interrupt();
         }
     }
 
