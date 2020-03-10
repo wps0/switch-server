@@ -1,7 +1,7 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.utils;
 
 import org.junit.jupiter.api.*;
-import pl.wieczorkep._switch.server.utils.FileSystemUtils;
+import pl.wieczorkep._switch.server.config.AppConfig;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.io.File;
@@ -16,6 +16,7 @@ class FileSystemUtilsTest {
     @BeforeEach
     void initEach() {
         appConfig = new AppConfig(new ConsoleView());
+        appConfig.init();
     }
 
     @Test
@@ -49,8 +50,8 @@ class FileSystemUtilsTest {
     }
 
 
-
     @Test
+    @Disabled
     void loadConfig() {
         fail("not yet implemented");
     }

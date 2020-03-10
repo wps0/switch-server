@@ -1,10 +1,8 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.utils;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import pl.wieczorkep._switch.server.utils.ActionUtils;
 import pl.wieczorkep._switch.server.utils.factory.ExceptionFactory;
 
 import java.time.DayOfWeek;
@@ -54,11 +52,13 @@ class ActionUtilsTest {
     }
 
     @Test
+    @Disabled
     void loadActions() {
         fail("Not yet implemented");
     }
 
     @Test
+    @Disabled
     void loadAction() {
         fail("Not yet implemented");
     }

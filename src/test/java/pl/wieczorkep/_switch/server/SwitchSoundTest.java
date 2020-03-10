@@ -1,7 +1,6 @@
 package pl.wieczorkep._switch.server;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -12,11 +11,13 @@ class SwitchSoundTest {
     }
 
     @Test
+    @Disabled
     void main() {
         fail("not yet implemented");
     }
 
     @Test
+    @Disabled
     void getConfig() {
         fail("not yet implemented");
     }
