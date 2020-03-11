@@ -19,7 +19,7 @@ public class SoundController implements LineListener {
         this.thisThread = Thread.currentThread();
     }
 
-    public void main(@NonNull String soundFile) {
+    public void main(@NonNull String soundFile) throws InterruptedException {
         File audioFile = new File(soundFile);
 
         try {
@@ -62,10 +62,7 @@ public class SoundController implements LineListener {
         } catch (LineUnavailableException e) {
             e.printStackTrace();
             System.out.println("Siema line unavailable");
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted");
         }
-
     }
 
     @Override

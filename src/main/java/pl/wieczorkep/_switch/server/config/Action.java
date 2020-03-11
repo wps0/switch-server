@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @EqualsAndHashCode
+@ToString
 public class Action {
     @Getter
     private ExecutionTime executionTime;

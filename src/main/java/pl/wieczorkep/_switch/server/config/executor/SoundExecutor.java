@@ -6,7 +6,7 @@ import java.util.Properties;
 
 public class SoundExecutor implements ActionExecutor {
     @Override
-    public boolean execute(Properties arguments) {
+    public boolean execute(Properties arguments) throws InterruptedException {
         // ToDo: ... execute sound action
 
         SoundController soundController = new SoundController();

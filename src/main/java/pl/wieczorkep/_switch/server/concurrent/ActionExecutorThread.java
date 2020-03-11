@@ -23,6 +23,8 @@ public class ActionExecutorThread extends Thread {
 
             successful = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
 
+        } catch (InterruptedException e) {
+            appConfig.getView().debug("Action " + targetAction.getActionId() + " was interrupted: " + e.getLocalizedMessage());
         } catch (Exception e) {
             appConfig.getView().error("Failed to execute action " + targetAction.getActionId() + ": " + e.getLocalizedMessage());
             e.printStackTrace();

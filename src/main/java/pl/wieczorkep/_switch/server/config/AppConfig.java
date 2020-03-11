@@ -5,6 +5,7 @@ import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -72,7 +73,7 @@ public class AppConfig {
         }
     }
 
-    public Map.Entry<String, Action> getActionsFirstEntry() {
+    public Entry<String, Action> getActionsFirstEntry() {
         actionsLock.lock();
         try {
             return actions.firstEntry();

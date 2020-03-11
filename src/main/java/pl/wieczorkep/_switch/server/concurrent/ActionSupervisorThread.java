@@ -1,8 +1,12 @@
 package pl.wieczorkep._switch.server.concurrent;
 
+import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
+import java.time.Duration;
 import java.util.concurrent.*;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ActionSupervisorThread implements Runnable {
     private boolean running;
@@ -31,11 +35,20 @@ public class ActionSupervisorThread implements Runnable {
             appConfig.getView().debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
 
             try {
-                if (actionExecutorThread == null && appConfig.getActionsFirstEntry() != null) {
-                    System.out.println("siema planuje");
-                    actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
-                    scheduledAction = executorService.schedule(actionExecutorThread, 5, TimeUnit.SECONDS);
-                }
+//                if (actionExecutorThread == null && appConfig.getActionsFirstEntry() != null) {
+//                    Action potentialAction;
+////                    appConfig.getView().info("Planning action " + );
+//                    actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
+//                    scheduledAction = executorService.schedule(actionExecutorThread, 3, TimeUnit.SECONDS);
+//                }
+//
+//                if (actionExecutorThread != null) {
+//                    if (!actionExecutorThread.isAlive()) {
+//                        scheduleAction();
+//                    }
+//                }
+
+                scheduleAction();
 
                 appConfig.awaitActionChange();
 
@@ -55,9 +68,56 @@ public class ActionSupervisorThread implements Runnable {
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                appConfig.getView().debug(Thread.currentThread(), "siema zamykam sie");
             }
         }
+    }
+
+    private void scheduleAction() {
+        Action topAction = appConfig.getActionsFirstEntry().getValue();
+
+        // todo:
+        //  1. czy sie oplaca zaplanowac?
+        //  2. cancel poprzedniej akcji
+        //  3. zaplanuj
+
+        // The currently planned action is waiting to be executed,
+        //  so check whether there is a new top action.
+        if (scheduledAction != null) {
+            long remainingTime = scheduledAction.getDelay(MILLISECONDS);
+            appConfig.getView().debug("Remaining time of the current action: " + remainingTime + "; top action's remaining time: " + topAction.getExecutionTime().getTime(MILLISECONDS));
+
+            // Interrupt the current action and plan the new, earlier one.
+            if (remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS) || scheduledAction.isDone()) {
+                // 2.
+                // todo: przerwanie, planowanie
+                cancelAction();
+                planAction(topAction);
+            }
+        }
+
+        // First run
+        if (scheduledAction == null && topAction != null) {
+            planAction(topAction);
+        }
+
+//        actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
+//        scheduledAction = executorService.schedule(actionExecutorThread, 3, TimeUnit.SECONDS);
+    }
+
+    private void cancelAction() {
+        appConfig.getView().debug("Cancelling current action...");
+        scheduledAction.cancel(true);
+        // todo: czy to nie wywali jakiegos bledu?
+        actionExecutorThread.interrupt();
+        appConfig.getView().debug("Successfully cancelled current action!");
+    }
+
+    private void planAction(Action newAction) {
+        appConfig.getView().debug("Planning " + newAction);
+        actionExecutorThread = new ActionExecutorThread(appConfig, newAction);
+        long s;
+        scheduledAction = executorService.schedule(actionExecutorThread, s = newAction.getExecutionTime().getTime(MILLISECONDS), MILLISECONDS);
+        appConfig.getView().debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
+
     }
 }
