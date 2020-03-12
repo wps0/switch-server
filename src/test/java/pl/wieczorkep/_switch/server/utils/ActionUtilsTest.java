@@ -44,7 +44,10 @@ class ActionUtilsTest {
 
     @Test
     void encodeDay_shouldReturnValidDayString() {
-        DayOfWeek[] days = {DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.SUNDAY, DayOfWeek.THURSDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY};
+        DayOfWeek[] days = {
+                DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.SUNDAY, DayOfWeek.THURSDAY,
+                DayOfWeek.TUESDAY, DayOfWeek.SATURDAY, DayOfWeek.WEDNESDAY
+        };
         // when
         String returnedDay = ActionUtils.encodeDays(days);
         // then

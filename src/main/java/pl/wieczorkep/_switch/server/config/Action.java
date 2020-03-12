@@ -10,8 +10,6 @@ import pl.wieczorkep._switch.server.config.extractor.SoundPathExtractor;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -74,11 +72,6 @@ public class Action implements Comparable<Action> {
         }
     }
 
-//    @Override
-//    public int compareTo(@NotNull Action otherAction) {
-//        int dayDifference = this.executionTime.executionDays
-//    }
-
 
     // ToDo: Type for notifying admins via email, client app on the windows computer.
     @AllArgsConstructor
@@ -107,8 +100,6 @@ public class Action implements Comparable<Action> {
         @NonNull
         private final DayOfWeek[] executionDays;
 
-        private Entry<DayOfWeek, Boolean> canExecuteCache;
-
         public ExecutionTime(int executionHour, int executionMinute, DayOfWeek[] executionDays) {
             this((byte) executionHour, (byte) executionMinute, executionDays);
         }
@@ -116,24 +107,14 @@ public class Action implements Comparable<Action> {
         public boolean canExecuteToday(final LocalDateTime now) {
             DayOfWeek today = now.getDayOfWeek();
 
-
-            if (canExecuteCache != null && canExecuteCache.getKey() == today) {
-
-                if (now.getHour() < executionHour || (now.getHour() == executionHour && now.getMinute() < executionMinute)) {
-                    return canExecuteCache.getValue();
-                } else {
-                    return false;
+            if (now.getHour() < executionHour || (now.getHour() == executionHour && now.getMinute() <= executionMinute)) {
+                for (DayOfWeek day : executionDays) {
+                    if (day == today) {
+                        return true;
+                    }
                 }
             }
 
-            for (DayOfWeek day : executionDays) {
-                if (day == today) {
-                    canExecuteCache = new SimpleEntry<>(day, true);
-                    return true;
-                }
-            }
-
-            canExecuteCache = new SimpleEntry<>(today, false);
             return false;
         }
 
@@ -150,7 +131,7 @@ public class Action implements Comparable<Action> {
             int minPeriod = Integer.MAX_VALUE;
 
             for (DayOfWeek day : executionDays) {
-                Period period = Period.between(now.toLocalDate(), now.with(TemporalAdjusters.nextOrSame(day)).toLocalDate());
+                Period period = Period.between(now.toLocalDate(), now.with(TemporalAdjusters.next(day)).toLocalDate());
                 if (period.getDays() < minPeriod) {
                     minPeriod = period.getDays();
                     closestDay = day;
