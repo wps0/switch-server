@@ -20,6 +20,7 @@ public final class ActionUtils {
     private ActionUtils() {}
 
     public static void loadActions(AppConfig appConfig) throws IOException {
+        appConfig.getView().info("Loading actions...");
         @Cleanup
         BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.ACTIONS_FILE)));
 

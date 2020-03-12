@@ -1,6 +1,7 @@
 package pl.wieczorkep._switch.server.config;
 
 import lombok.*;
+import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.config.executor.ActionExecutor;
 import pl.wieczorkep._switch.server.config.executor.SoundExecutor;
 import pl.wieczorkep._switch.server.config.extractor.ArgumentsExtractor;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @EqualsAndHashCode
 @ToString
-public class Action {
+public class Action implements Comparable<Action> {
     @Getter
     private ExecutionTime executionTime;
     @Getter
@@ -46,6 +47,10 @@ public class Action {
         this(new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments, actionId);
     }
 
+    public Action(int executionHour, int executionMinute, DayOfWeek[] executionDays, Type type, String typeArguments, final @NonNull String actionId) {
+        this(new ExecutionTime((byte) executionHour, (byte) executionMinute, executionDays), type, typeArguments, actionId);
+    }
+
     public String getRawArguments() {
         return typeArguments;
     }
@@ -59,10 +64,21 @@ public class Action {
         return arguments;
     }
 
+    @Override
+    public int compareTo(@NotNull Action o) {
+        int exTimeCompare = executionTime.compareTo(o.getExecutionTime());
+        if (exTimeCompare == 0) {
+            return actionId.compareTo(o.getActionId());
+        } else {
+            return exTimeCompare;
+        }
+    }
+
 //    @Override
 //    public int compareTo(@NotNull Action otherAction) {
 //        int dayDifference = this.executionTime.executionDays
 //    }
+
 
     // ToDo: Type for notifying admins via email, client app on the windows computer.
     @AllArgsConstructor
@@ -79,7 +95,7 @@ public class Action {
     @RequiredArgsConstructor
     @EqualsAndHashCode
     @ToString
-    public static class ExecutionTime {
+    public static class ExecutionTime implements Comparable<ExecutionTime> {
         @Getter
         private final byte executionHour;
         @Getter
@@ -93,11 +109,21 @@ public class Action {
 
         private Entry<DayOfWeek, Boolean> canExecuteCache;
 
+        public ExecutionTime(int executionHour, int executionMinute, DayOfWeek[] executionDays) {
+            this((byte) executionHour, (byte) executionMinute, executionDays);
+        }
+
         public boolean canExecuteToday(final LocalDateTime now) {
             DayOfWeek today = now.getDayOfWeek();
 
+
             if (canExecuteCache != null && canExecuteCache.getKey() == today) {
-                return canExecuteCache.getValue();
+
+                if (now.getHour() < executionHour || (now.getHour() == executionHour && now.getMinute() < executionMinute)) {
+                    return canExecuteCache.getValue();
+                } else {
+                    return false;
+                }
             }
 
             for (DayOfWeek day : executionDays) {
@@ -163,6 +189,17 @@ public class Action {
             return timeUnit.convert(
                     ChronoUnit.MICROS.between(now, nextExecution),
                     TimeUnit.MICROSECONDS);
+        }
+
+        @Override
+        public int compareTo(@NotNull Action.ExecutionTime o) {
+            long executionTime = getTime(TimeUnit.MILLISECONDS);
+            long oExecutionTime = o.getTime(TimeUnit.MILLISECONDS);
+
+            System.out.println(executionTime + " & " + oExecutionTime);
+
+            // todo: upewnic sie, ze to dziala
+            return Long.compare(executionTime, oExecutionTime);
         }
 
 //        public static int calculateDeviation(ExecutionTime toTime) {

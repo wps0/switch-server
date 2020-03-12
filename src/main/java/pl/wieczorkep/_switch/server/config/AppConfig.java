@@ -5,7 +5,6 @@ import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,6 +14,7 @@ public class AppConfig {
     @Getter
     private Properties props;
     private TreeMap<String, Action> actions;
+    private Action firstAction;
     // ==!== Concurrency support ==!==
     @Getter
     private ReentrantLock actionsLock;
@@ -43,6 +43,7 @@ public class AppConfig {
         this.actions = new TreeMap<>();
         this.actionsLock = new ReentrantLock();
         this.actionsChangeCondition = this.actionsLock.newCondition();
+        this.firstAction = null;
     }
 
 
@@ -73,20 +74,34 @@ public class AppConfig {
         }
     }
 
-    public Entry<String, Action> getActionsFirstEntry() {
+    public Optional<Action> getFirstAction() {
         actionsLock.lock();
         try {
-            return actions.firstEntry();
+//            return actions.firstEntry();
+            if (firstAction == null) {
+                return Optional.empty();
+            }
+            return Optional.of(firstAction);
         } finally {
             actionsLock.unlock();
         }
     }
 
     public void putAction(Action action) {
+        putAction(action.getActionId(), action);
+        view.info("Loaded 1 action.");
+    }
+
+    private void putAction(String actionId, Action action) {
         actionsLock.lock();
         try {
-            actions.put(action.getActionId(), action);
-            view.info("Loaded 1 action.");
+            actions.put(actionId, action);
+
+            if (firstAction == null || firstAction.compareTo(action) > 0) {
+                firstAction = action;
+            }
+
+            // signal the action change
             actionsChangeCondition.signalAll();
         } finally {
             actionsLock.unlock();
@@ -94,14 +109,14 @@ public class AppConfig {
     }
 
     public void putActions(Map<? extends String, ? extends Action> actionMap) {
+        actionMap.forEach(this::putAction);
         actionsLock.lock();
         try {
-            actions.putAll(actionMap);
-            view.info("Loaded " + actionMap.size() + " actions");
             actionsChangeCondition.signalAll();
         } finally {
             actionsLock.unlock();
         }
+        view.info("Loaded " + actionMap.size() + " actions");
     }
 
     ///////////////////////////////////////////////////////////////////////////

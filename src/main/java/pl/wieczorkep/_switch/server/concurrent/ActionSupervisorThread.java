@@ -4,7 +4,9 @@ import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -14,11 +16,13 @@ public class ActionSupervisorThread implements Runnable {
     private ScheduledFuture<?> scheduledAction;
     private ActionExecutorThread actionExecutorThread;
     private AppConfig appConfig;
+    private ReentrantLock lock;
 
     public ActionSupervisorThread(AppConfig appConfig) {
         this.executorService = Executors.newSingleThreadScheduledExecutor();
         this.appConfig = appConfig;
         this.running = false;
+        this.lock = new ReentrantLock();
 //        this.actionCondition = this.lock.newCondition();
     }
 
@@ -73,7 +77,15 @@ public class ActionSupervisorThread implements Runnable {
     }
 
     private void scheduleAction() {
-        Action topAction = appConfig.getActionsFirstEntry().getValue();
+        // moze sie cos popsuc jesli w trakcie, gdy jeden watek sprobuje zaplanowac, drugi doda cos jako firstEntry,
+        //  i trzeci sprobuje znowu zaplanowac(?)
+        // ToDo: investigate
+        Optional<Action> topActionOptional = appConfig.getFirstAction();
+        if (!topActionOptional.isPresent()) {
+            return;
+        }
+
+        Action topAction = topActionOptional.get();
 
         // todo:
         //  1. czy sie oplaca zaplanowac?
@@ -82,22 +94,31 @@ public class ActionSupervisorThread implements Runnable {
 
         // The currently planned action is waiting to be executed,
         //  so check whether there is a new top action.
-        if (scheduledAction != null) {
-            long remainingTime = scheduledAction.getDelay(MILLISECONDS);
-            appConfig.getView().debug("Remaining time of the current action: " + remainingTime + "; top action's remaining time: " + topAction.getExecutionTime().getTime(MILLISECONDS));
+        lock.lock();
+        try {
+            if (scheduledAction != null) {
+                long remainingTime = scheduledAction.getDelay(MILLISECONDS);
+                appConfig.getView().debug("Remaining time of the current action: " + remainingTime + "; top action's remaining time: " + topAction.getExecutionTime().getTime(MILLISECONDS));
 
-            // Interrupt the current action and plan the new, earlier one.
-            if (remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS) || scheduledAction.isDone()) {
-                // 2.
-                // todo: przerwanie, planowanie
-                cancelAction();
-                planAction(topAction);
+                // Interrupt the current action and plan the new, earlier one.
+                if (remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS) || scheduledAction.isDone()) {
+                    // 2.
+                    cancelAction();
+                    planAction(topAction);
+                }
             }
+        } finally {
+            lock.unlock();
         }
 
         // First run
-        if (scheduledAction == null && topAction != null) {
-            planAction(topAction);
+        lock.lock();
+        try {
+            if (scheduledAction == null) {
+                planAction(topAction);
+            }
+        } finally {
+            lock.unlock();
         }
 
 //        actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
