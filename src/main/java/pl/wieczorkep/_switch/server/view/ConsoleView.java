@@ -10,8 +10,8 @@ import java.util.logging.*;
 public class ConsoleView implements View {
     private final Logger consoleLogger;
     private Scanner scanner;
-    private @Getter
-    Menu menu;
+    @Getter
+    private Menu menu;
 
     public ConsoleView() {
         this.scanner = new Scanner(System.in);

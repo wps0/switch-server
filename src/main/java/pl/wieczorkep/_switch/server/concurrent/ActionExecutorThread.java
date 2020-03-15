@@ -1,19 +1,24 @@
 package pl.wieczorkep._switch.server.concurrent;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
 import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
-@RequiredArgsConstructor
 public class ActionExecutorThread extends Thread {
     private final AppConfig appConfig;
     @Getter
     @NonNull
-    private final Action targetAction;
+    private Action targetAction;
     @Getter
     private boolean successful;
     @Getter
     private boolean finished;
+
+    public ActionExecutorThread(AppConfig appConfig, @NonNull Action targetAction) {
+        this.appConfig = appConfig;
+        this.targetAction = targetAction;
+    }
 
     @Override
     public void run() {

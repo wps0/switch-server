@@ -10,7 +10,6 @@ import pl.wieczorkep._switch.server.utils.factory.ExceptionFactory;
 import java.io.*;
 import java.time.DayOfWeek;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,7 +35,7 @@ public final class ActionUtils {
                 .distinct()
                 .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toMap(Action::getActionId, Function.identity())));
+                .collect(Collectors.toSet()));
     }
 
     @SneakyThrows

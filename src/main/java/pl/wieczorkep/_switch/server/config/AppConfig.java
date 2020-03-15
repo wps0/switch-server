@@ -13,8 +13,8 @@ public class AppConfig {
     private View view;
     @Getter
     private Properties props;
-    private TreeMap<String, Action> actions;
-    private Action firstAction;
+    // ToDo: problem z watchservice, bo set trzyma akcje w kolejnosci, w jakiej zostaly dodane.
+    private TreeSet<Action> actions;
     // ==!== Concurrency support ==!==
     @Getter
     private ReentrantLock actionsLock;
@@ -40,10 +40,9 @@ public class AppConfig {
 
     public AppConfig(View view) {
         this.view = view;
-        this.actions = new TreeMap<>();
+        this.actions = new TreeSet<>();
         this.actionsLock = new ReentrantLock();
         this.actionsChangeCondition = this.actionsLock.newCondition();
-        this.firstAction = null;
     }
 
 
@@ -65,41 +64,49 @@ public class AppConfig {
     //
     // === Actions ===
     //
-    public Action getAction(String key) {
+    public Optional<Action> getFirstAction() {
         actionsLock.lock();
         try {
-            return actions.get(key);
+            return Optional.ofNullable(actions.first());
+        } catch (NoSuchElementException e) {
+            view.debug(e.getMessage() + "; an empty optional will be returned");
+            return Optional.empty();
         } finally {
             actionsLock.unlock();
         }
     }
 
-    public Optional<Action> getFirstAction() {
+    public void oks() {
+
+        System.out.println(actions.toString());
+    }
+
+    public void refreshPosition(Action action) {
+
         actionsLock.lock();
         try {
-//            return actions.firstEntry();
-            if (firstAction == null) {
-                return Optional.empty();
+            for (Action a : actions) {
+                if (a.getActionId().equals(action.getActionId())) {
+                    if (actions.remove(a)) {
+                        actions.add(a);
+                    }
+                    return;
+                }
             }
-            return Optional.of(firstAction);
         } finally {
             actionsLock.unlock();
         }
     }
 
     public void putAction(Action action) {
-        putAction(action.getActionId(), action);
+        addAction(action);
         view.info("Loaded 1 action.");
     }
 
-    private void putAction(String actionId, Action action) {
+    private void addAction(Action action) {
         actionsLock.lock();
         try {
-            actions.put(actionId, action);
-
-            if (firstAction == null || firstAction.compareTo(action) > 0) {
-                firstAction = action;
-            }
+            actions.add(action);
 
             // signal the action change
             actionsChangeCondition.signalAll();
@@ -108,8 +115,8 @@ public class AppConfig {
         }
     }
 
-    public void putActions(Map<? extends String, ? extends Action> actionMap) {
-        actionMap.forEach(this::putAction);
+    public void putActions(Set<? extends Action> actionMap) {
+        actionMap.forEach(this::addAction);
         actionsLock.lock();
         try {
             actionsChangeCondition.signalAll();
@@ -140,9 +147,6 @@ public class AppConfig {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Static methods
-    ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     // Static methods
     ///////////////////////////////////////////////////////////////////////////

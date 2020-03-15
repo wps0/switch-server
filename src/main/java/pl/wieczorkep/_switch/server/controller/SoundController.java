@@ -41,7 +41,7 @@ public class SoundController implements LineListener {
             System.out.println("Dlugosc z micro seconds: " + audioClip.getMicrosecondLength() / 1000_000.0 + "s");
 
             audioClip.start();
-            audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + 149 * 1000_000L);
+//            audioClip.setMicrosecondPosition(audioClip.getMicrosecondPosition() + 149 * 1000_000L);
 
             while (true) {
                 musicLock.lock();

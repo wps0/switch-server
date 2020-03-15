@@ -107,7 +107,7 @@ public class Action implements Comparable<Action> {
         public boolean canExecuteToday(final LocalDateTime now) {
             DayOfWeek today = now.getDayOfWeek();
 
-            if (now.getHour() < executionHour || (now.getHour() == executionHour && now.getMinute() <= executionMinute)) {
+            if (now.getHour() < executionHour || (now.getHour() == executionHour && now.getMinute() < executionMinute)) {
                 for (DayOfWeek day : executionDays) {
                     if (day == today) {
                         return true;
@@ -152,6 +152,7 @@ public class Action implements Comparable<Action> {
          * @param now      the current moment.
          * @return -1 if the closest day is null.
          */
+        // ToDo: cleanup!
         public long getTime(TimeUnit timeUnit, final LocalDateTime now) {
             final DayOfWeek closestDay = getClosestExecutionDay(now);
 
@@ -159,17 +160,32 @@ public class Action implements Comparable<Action> {
                 return -1;
             }
 
-            LocalDateTime nextExecution = now
+            LocalDateTime todayBlank = now
                     .minusHours(now.getHour())
                     .minusMinutes(now.getMinute())
-                    .minusSeconds(now.getSecond())
+                    .minusSeconds(now.getSecond());
+
+            LocalDateTime nextExecution = todayBlank
                     .with(TemporalAdjusters.nextOrSame(closestDay))
                     .plusHours(executionHour)
                     .plusMinutes(executionMinute);
+//            System.out.println(nextExecution.toString());
 
-            return timeUnit.convert(
-                    ChronoUnit.MICROS.between(now, nextExecution),
-                    TimeUnit.MICROSECONDS);
+            long millisToNextExecution = ChronoUnit.MILLIS.between(now, nextExecution);
+
+            if (executionDays.length == 1 && millisToNextExecution < 0) {
+                nextExecution = todayBlank
+                        .with(TemporalAdjusters.next(closestDay))
+                        .plusHours(executionHour)
+                        .plusMinutes(executionMinute);
+                millisToNextExecution = ChronoUnit.MILLIS.between(now, nextExecution);
+            }
+
+//            System.out.println("AAA: " + nextExecution.toString());
+//            System.out.println(millisToNextExecution);
+
+            return timeUnit.convert(millisToNextExecution,
+                    TimeUnit.MILLISECONDS);
         }
 
         @Override

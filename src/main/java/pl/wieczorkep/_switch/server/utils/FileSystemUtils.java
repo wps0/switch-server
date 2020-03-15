@@ -60,10 +60,6 @@ public final class FileSystemUtils {
                 status &= actionsFile.createNewFile();
 
                 @Cleanup FileWriter registerWriter = new FileWriter(actionsFile);
-//                    writer.write("# Includes the execution times of the tasks specified under " + appConfig.get(AppConfig.ACTIONS_DIR) + "\n");
-//                    writer.write("# Example:\n");
-//                    writer.write("#   ---  fire the actions specified in the break.action at 8.45");
-//                    writer.write("# 8.50=lesson");
                 registerWriter.write("# Each action file has to be registered here\n");
                 registerWriter.write("# Example:\n");
                 registerWriter.write("# active=lessons,breaks,weather,szczesliwynumerek\n");

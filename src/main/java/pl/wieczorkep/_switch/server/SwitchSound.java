@@ -21,6 +21,14 @@ public class SwitchSound {
         }
         concurrencyManager.init();
 
+        int code = 0;
+        while (code != -1) {
+            code = config.getView().readInt("?");
+            if (code == 1) {
+                config.oks();
+            }
+        }
+
 
 //        SoundController.main(args);
 
