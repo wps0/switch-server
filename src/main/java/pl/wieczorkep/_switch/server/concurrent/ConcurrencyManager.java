@@ -20,12 +20,12 @@ public class ConcurrencyManager {
     }
 
     public void init() {
-        appConfig.getView().debug("Initializing new threads...");
+        appConfig.getView().debug("Creating threads...");
         actionExecutorThread = new Thread(new ActionSupervisorThread(appConfig));
         actionExecutorThread.setName(prettifyThreadName(actionExecutorThread));
         actionExecutorThread.start();
 
-        appConfig.getView().debug("Threads initialized successfully");
+        appConfig.getView().debug("Threads created successfully");
     }
 
 }

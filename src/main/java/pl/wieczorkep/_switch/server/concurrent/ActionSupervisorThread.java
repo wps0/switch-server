@@ -103,6 +103,10 @@ public class ActionSupervisorThread implements Runnable {
                 // Interrupt the current action and plan the new, earlier one.
                 if (scheduledFuture.isDone() || remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS)) {
 
+                    cancelAction();
+                    // Refresh the action's position in the AppConfig internal set.
+                    appConfig.refreshPosition(actionExecutorThread.getTargetAction());
+
                     // The top action is the currently executed one
                     System.out.println("czas pozostaly: " + remainingTime);
                     if (remainingTime < 0) {
@@ -110,9 +114,6 @@ public class ActionSupervisorThread implements Runnable {
                                 .orElse(topAction);
                     }
 
-                    cancelAction();
-                    // Refresh the action's position in the AppConfig internal set.
-                    appConfig.refreshPosition(actionExecutorThread.getTargetAction());
                     planAction(topAction);
                 }
 

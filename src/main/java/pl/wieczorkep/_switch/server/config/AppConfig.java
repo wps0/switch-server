@@ -1,9 +1,11 @@
 package pl.wieczorkep._switch.server.config;
 
 import lombok.Getter;
+import pl.wieczorkep._switch.server.utils.factory.ActionFactory;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,7 +49,7 @@ public class AppConfig {
 
 
     /**
-     * Should always be called before using the other methods
+     * Should always be called before using other methods
      */
     public void init() {
         this.props = new Properties(getDefaultProperties());
@@ -82,17 +84,22 @@ public class AppConfig {
     }
 
     public void refreshPosition(Action action) {
-
         actionsLock.lock();
         try {
-            for (Action a : actions) {
-                if (a.getActionId().equals(action.getActionId())) {
-                    if (actions.remove(a)) {
-                        actions.add(a);
-                    }
-                    return;
+
+            if (action == getFirstAction().orElseGet(ActionFactory::createExampleAction)) {
+                actions.add(actions.pollFirst());
+            }
+
+            Iterator<Action> actionIterator = actions.iterator();
+            while (actionIterator.hasNext()) {
+                if (action == actionIterator.next()) {
+                    actionIterator.remove();
+                    actions.add(action);
+                    break;
                 }
             }
+
         } finally {
             actionsLock.unlock();
         }
@@ -116,9 +123,9 @@ public class AppConfig {
     }
 
     public void putActions(Set<? extends Action> actionMap) {
-        actionMap.forEach(this::addAction);
         actionsLock.lock();
         try {
+            actions.addAll(actionMap);
             actionsChangeCondition.signalAll();
         } finally {
             actionsLock.unlock();
@@ -167,5 +174,9 @@ public class AppConfig {
         defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
 
         return defaultProperties;
+    }
+
+    public static long getReferenceTime() {
+        return Instant.now().getEpochSecond();
     }
 }

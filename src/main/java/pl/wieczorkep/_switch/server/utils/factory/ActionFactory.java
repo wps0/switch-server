@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class ActionFactory {
-    public Action createExampleAction() {
+    public static Action createExampleAction() {
         return new Action(
                 (byte) 8,
                 (byte) 45,
@@ -56,7 +56,7 @@ public class ActionFactory {
 
         actionWriter.write("#\n");
         actionWriter.write("# Run your task at the specific minute\n");
-        actionWriter.write("# Acceptable values: 0-23\n");
+        actionWriter.write("# Acceptable values: 0-60\n");
         actionWriter.write("#minute=" + fromAction.getExecutionTime().getExecutionMinute() + "\n");
 
         actionWriter.write("#\n");

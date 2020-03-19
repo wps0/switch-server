@@ -190,8 +190,9 @@ public class Action implements Comparable<Action> {
 
         @Override
         public int compareTo(@NotNull Action.ExecutionTime o) {
-            long executionTime = getTime(TimeUnit.MILLISECONDS);
-            long oExecutionTime = o.getTime(TimeUnit.MILLISECONDS);
+            final long referenceValue = AppConfig.getReferenceTime();
+            long executionTime = referenceValue + getTime(TimeUnit.MILLISECONDS);
+            long oExecutionTime = referenceValue + o.getTime(TimeUnit.MILLISECONDS);
 
             System.out.println(executionTime + " & " + oExecutionTime);
 
