@@ -8,7 +8,6 @@ public class SoundExecutor implements ActionExecutor {
     @Override
     public boolean execute(Properties arguments) throws InterruptedException {
         // ToDo: ... execute sound action
-
         SoundController soundController = new SoundController();
         soundController.main(arguments.getProperty("songPath"));
 

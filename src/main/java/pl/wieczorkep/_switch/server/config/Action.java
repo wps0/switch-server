@@ -152,7 +152,6 @@ public class Action implements Comparable<Action> {
          * @param now      the current moment.
          * @return -1 if the closest day is null.
          */
-        // ToDo: cleanup!
         public long getTime(TimeUnit timeUnit, final LocalDateTime now) {
             final DayOfWeek closestDay = getClosestExecutionDay(now);
 
@@ -169,7 +168,6 @@ public class Action implements Comparable<Action> {
                     .with(TemporalAdjusters.nextOrSame(closestDay))
                     .plusHours(executionHour)
                     .plusMinutes(executionMinute);
-//            System.out.println(nextExecution.toString());
 
             long millisToNextExecution = ChronoUnit.MILLIS.between(now, nextExecution);
 
@@ -181,9 +179,6 @@ public class Action implements Comparable<Action> {
                 millisToNextExecution = ChronoUnit.MILLIS.between(now, nextExecution);
             }
 
-//            System.out.println("AAA: " + nextExecution.toString());
-//            System.out.println(millisToNextExecution);
-
             return timeUnit.convert(millisToNextExecution,
                     TimeUnit.MILLISECONDS);
         }
@@ -194,27 +189,8 @@ public class Action implements Comparable<Action> {
             long executionTime = referenceValue + getTime(TimeUnit.MILLISECONDS);
             long oExecutionTime = referenceValue + o.getTime(TimeUnit.MILLISECONDS);
 
-            System.out.println(executionTime + " & " + oExecutionTime);
-
             // todo: upewnic sie, ze to dziala
             return Long.compare(executionTime, oExecutionTime);
         }
-
-//        public static int calculateDeviation(ExecutionTime toTime) {
-//            final LocalDateTime NOW = LocalDateTime.now();
-//            final int CURRENT_YEAR = NOW.getYear();
-//            final Month CURRENT_MONTH = NOW.getMonth();
-//            final int CURRENT_DAY_OF_MONTH = NOW.getDayOfMonth();
-//            final int CURRENT_HOUR = NOW.getDayOfMonth();
-//            final int CURRENT_MINUTE = NOW.getDayOfMonth();
-//
-//            LocalDateTime currentTime = LocalDateTime.of(CURRENT_YEAR, CURRENT_MONTH, CURRENT_DAY_OF_MONTH, CURRENT_HOUR, CURRENT_MINUTE);
-//
-//            LocalDateTime executionTime = LocalDateTime.of(CURRENT_YEAR, CURRENT_MONTH, toTime.getClosestExecutionDay().getValue(), toTime.getExecutionHour(), toTime.getExecutionMinute());
-//
-//            return
-//                    (CURRENT_DAY_OF_MONTH - toTime.getClosestExecutionDay().getValue()) * 86400
-//                    + (CURRENT_HOUR - toTime.getExecutionHour())
-//        }
     }
 }

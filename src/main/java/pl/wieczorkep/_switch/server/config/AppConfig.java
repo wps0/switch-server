@@ -78,11 +78,6 @@ public class AppConfig {
         }
     }
 
-    public void oks() {
-
-        System.out.println(actions.toString());
-    }
-
     public void refreshPosition(Action action) {
         actionsLock.lock();
         try {

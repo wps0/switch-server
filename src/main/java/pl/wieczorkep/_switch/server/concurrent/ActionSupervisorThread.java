@@ -23,53 +23,24 @@ public class ActionSupervisorThread implements Runnable {
         this.appConfig = appConfig;
         this.running = false;
         this.lock = new ReentrantLock();
-//        this.actionCondition = this.lock.newCondition();
     }
 
     @Override
     public void run() {
-//        Action firstAction = SwitchSound.getConfig().getActions().firstEntry().getValue();
         this.running = true;
         loop();
     }
 
     public void loop() {
+        scheduleAction();
 
         while (running) {
             appConfig.getView().debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
 
             try {
-//                if (actionExecutorThread == null && appConfig.getActionsFirstEntry() != null) {
-//                    Action potentialAction;
-////                    appConfig.getView().info("Planning action " + );
-//                    actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
-//                    scheduledAction = executorService.schedule(actionExecutorThread, 3, TimeUnit.SECONDS);
-//                }
-//
-//                if (actionExecutorThread != null) {
-//                    if (!actionExecutorThread.isAlive()) {
-//                        scheduleAction();
-//                    }
-//                }
-
-                scheduleAction();
-
                 appConfig.awaitActionChange();
 
-
-//                Map.Entry<String, Action> firstEntry = appConfig.getActions().firstEntry();
-//                if (firstEntry != null && firstEntry.getValue() != scheduledAction) {
-//                    Action firstAction = firstEntry.getValue();
-//
-//                    System.out.printf("Pierwsza akcja: %s; Type: %s(args: %s); ExecutionTime: %s",
-//                            firstAction.getActionId(), firstAction.getType(), firstAction.getRawArguments(),
-//                            firstAction.getExecutionTime().toString());
-//
-//                    if (scheduledAction == null) {
-//                        scheduledAction = firstAction;
-//                    }
-//                }
-
+                scheduleAction();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -87,11 +58,6 @@ public class ActionSupervisorThread implements Runnable {
 
         Action topAction = topActionOptional.get();
 
-        // todo:
-        //  1. czy sie oplaca zaplanowac?
-        //  2. cancel poprzedniej akcji
-        //  3. zaplanuj
-
         // The currently planned action is waiting to be executed,
         //  so check whether there is a new top action.
         lock.lock();
@@ -102,13 +68,12 @@ public class ActionSupervisorThread implements Runnable {
 
                 // Interrupt the current action and plan the new, earlier one.
                 if (scheduledFuture.isDone() || remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS)) {
-
+                    // Knowing the new action is more appropriate, cancel the previous one.
                     cancelAction();
                     // Refresh the action's position in the AppConfig internal set.
                     appConfig.refreshPosition(actionExecutorThread.getTargetAction());
 
                     // The top action is the currently executed one
-                    System.out.println("czas pozostaly: " + remainingTime);
                     if (remainingTime < 0) {
                         topAction = appConfig.getFirstAction()
                                 .orElse(topAction);
@@ -119,15 +84,11 @@ public class ActionSupervisorThread implements Runnable {
 
             } else {
                 // First run
-
                 planAction(topAction);
             }
         } finally {
             lock.unlock();
         }
-
-//        actionExecutorThread = new ActionExecutorThread(appConfig, appConfig.getActionsFirstEntry().getValue());
-//        scheduledAction = executorService.schedule(actionExecutorThread, 3, TimeUnit.SECONDS);
     }
 
     private void cancelAction() {

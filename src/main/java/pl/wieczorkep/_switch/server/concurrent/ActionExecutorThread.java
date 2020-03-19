@@ -22,7 +22,6 @@ public class ActionExecutorThread extends Thread {
 
     @Override
     public void run() {
-//        int maxDeviation = Integer.parseInt(appConfig.get(ACTION_EXECUTION_TIME_MAX_DEVIATION));
         try {
             appConfig.getView().info("Executing action " + targetAction.getActionId() + " (arguments " + targetAction.getArguments().toString() + ")");
 

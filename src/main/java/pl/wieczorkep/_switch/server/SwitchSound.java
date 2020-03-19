@@ -6,6 +6,7 @@ import pl.wieczorkep._switch.server.utils.FileSystemUtils;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.nio.file.FileSystemException;
+import java.util.Arrays;
 
 public class SwitchSound {
     private static AppConfig config = new AppConfig(new ConsoleView());
@@ -17,23 +18,10 @@ public class SwitchSound {
         try {
             FileSystemUtils.initializeConfig(config);
         } catch (FileSystemException e) {
-            e.printStackTrace();
+            config.getView().error(e.getMessage());
+            config.getView().error(Arrays.toString(e.getStackTrace()));
         }
         concurrencyManager.init();
-
-        int code = 0;
-        while (code != -1) {
-            code = config.getView().readInt("?");
-            if (code == 1) {
-
-                config.oks();
-            }
-        }
-
-
-//        SoundController.main(args);
-
-
     }
 
     public static AppConfig getConfig() {

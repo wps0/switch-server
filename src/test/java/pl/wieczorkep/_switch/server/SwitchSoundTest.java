@@ -11,13 +11,13 @@ class SwitchSoundTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("not yet implemented")
     void main() {
         fail("not yet implemented");
     }
 
     @Test
-    @Disabled
+    @Disabled("not yet implemented")
     void getConfig() {
         fail("not yet implemented");
     }
