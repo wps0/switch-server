@@ -1,7 +1,6 @@
 package pl.wieczorkep._switch.server.config;
 
 import lombok.Getter;
-import pl.wieczorkep._switch.server.utils.factory.ActionFactory;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
@@ -81,19 +80,16 @@ public class AppConfig {
     public void refreshPosition(Action action) {
         actionsLock.lock();
         try {
-
-            if (action == getFirstAction().orElseGet(ActionFactory::createExampleAction)) {
-                actions.add(actions.pollFirst());
-            }
+            List<Action> allActions = new ArrayList<>();
 
             Iterator<Action> actionIterator = actions.iterator();
             while (actionIterator.hasNext()) {
-                if (action == actionIterator.next()) {
-                    actionIterator.remove();
-                    actions.add(action);
-                    break;
-                }
+                Action currentAction = actionIterator.next();
+                allActions.add(currentAction);
+                actionIterator.remove();
             }
+
+            actions.addAll(allActions);
 
         } finally {
             actionsLock.unlock();
