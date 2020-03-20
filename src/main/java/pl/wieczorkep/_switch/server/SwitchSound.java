@@ -1,5 +1,6 @@
 package pl.wieczorkep._switch.server;
 
+import lombok.Getter;
 import pl.wieczorkep._switch.server.concurrent.ConcurrencyManager;
 import pl.wieczorkep._switch.server.config.AppConfig;
 import pl.wieczorkep._switch.server.utils.FileSystemUtils;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 
 public class SwitchSound {
     private static AppConfig config = new AppConfig(new ConsoleView());
+    @Getter
     private static ConcurrencyManager concurrencyManager = new ConcurrencyManager(config);
 
     // ToDo: cmd arguments handling

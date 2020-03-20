@@ -1,5 +1,6 @@
 package pl.wieczorkep._switch.server.concurrent;
 
+import pl.wieczorkep._switch.server.SwitchSound;
 import pl.wieczorkep._switch.server.config.Action;
 import pl.wieczorkep._switch.server.config.AppConfig;
 
@@ -42,7 +43,18 @@ public class ActionSupervisorThread implements Runnable {
 
                 scheduleAction();
             } catch (InterruptedException e) {
+                appConfig.getView().info("AwaitActionChange condition was interrupted");
+            } catch (Exception e) {
+                appConfig.getView().error("Exception thrown!");
                 e.printStackTrace();
+
+                try {
+                    ConcurrencyManager concurrencyManager = SwitchSound.getConcurrencyManager();
+                    concurrencyManager.getLock().lock();
+                    concurrencyManager.getThreadErrorCondition().signalAll();
+                } finally {
+                    SwitchSound.getConcurrencyManager().getLock().unlock();
+                }
             }
         }
     }
