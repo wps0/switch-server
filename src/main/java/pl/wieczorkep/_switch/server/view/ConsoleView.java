@@ -25,8 +25,11 @@ public class ConsoleView implements View {
         consoleLogger.setUseParentHandlers(false);
 
         Handler consoleHandler = new ConsoleHandler();
+        Formatter formatter = new LogFormatter();
+        consoleHandler.setFormatter(formatter);
         consoleHandler.setLevel(Level.ALL);
         consoleLogger.addHandler(consoleHandler);
+
 
         consoleLogger.setLevel(Level.ALL);
         consoleLogger.info("Logging level is: " + consoleLogger.getLevel());
