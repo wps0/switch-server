@@ -1,8 +1,8 @@
-package pl.wieczorkep._switch.server.concurrent;
+package pl.wieczorkep._switch.server.core.concurrent;
 
 import pl.wieczorkep._switch.server.SwitchSound;
-import pl.wieczorkep._switch.server.config.Action;
-import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.AppConfig;
 
 import java.time.Duration;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.utils.factory;
+package pl.wieczorkep._switch.server.core.utils.factory;
 
 import java.time.format.DateTimeParseException;
 

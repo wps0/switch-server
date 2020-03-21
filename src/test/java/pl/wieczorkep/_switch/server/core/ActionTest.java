@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.core;
 
 import org.junit.jupiter.api.*;
 

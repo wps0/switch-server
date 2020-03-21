@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.config.extractor;
+package pl.wieczorkep._switch.server.core.extractor;
 
 import lombok.SneakyThrows;
 

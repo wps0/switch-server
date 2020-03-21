@@ -1,10 +1,10 @@
-package pl.wieczorkep._switch.server.utils.factory;
+package pl.wieczorkep._switch.server.core.utils.factory;
 
 import lombok.Cleanup;
 import lombok.NonNull;
-import pl.wieczorkep._switch.server.config.Action;
-import pl.wieczorkep._switch.server.config.AppConfig;
-import pl.wieczorkep._switch.server.utils.ActionUtils;
+import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.AppConfig;
+import pl.wieczorkep._switch.server.core.utils.ActionUtils;
 
 import java.io.*;
 import java.time.DayOfWeek;

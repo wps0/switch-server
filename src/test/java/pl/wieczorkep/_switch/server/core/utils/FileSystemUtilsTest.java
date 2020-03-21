@@ -1,7 +1,7 @@
-package pl.wieczorkep._switch.server.utils;
+package pl.wieczorkep._switch.server.core.utils;
 
 import org.junit.jupiter.api.*;
-import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.io.File;

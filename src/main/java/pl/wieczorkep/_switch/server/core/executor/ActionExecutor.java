@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.config.executor;
+package pl.wieczorkep._switch.server.core.executor;
 
 import java.util.Properties;
 

@@ -1,11 +1,11 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.core;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import pl.wieczorkep._switch.server.config.Action.ExecutionTime;
+import pl.wieczorkep._switch.server.core.Action.ExecutionTime;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;

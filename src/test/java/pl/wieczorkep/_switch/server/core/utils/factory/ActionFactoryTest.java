@@ -1,8 +1,8 @@
-package pl.wieczorkep._switch.server.utils.factory;
+package pl.wieczorkep._switch.server.core.utils.factory;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
-import pl.wieczorkep._switch.server.config.Action;
+import pl.wieczorkep._switch.server.core.Action;
 
 import java.io.File;
 import java.io.IOException;

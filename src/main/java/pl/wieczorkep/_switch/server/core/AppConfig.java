@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.core;
 
 import lombok.Getter;
 import pl.wieczorkep._switch.server.view.View;

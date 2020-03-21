@@ -1,11 +1,11 @@
-package pl.wieczorkep._switch.server.utils;
+package pl.wieczorkep._switch.server.core.utils;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import pl.wieczorkep._switch.server.SwitchSound;
-import pl.wieczorkep._switch.server.config.Action;
-import pl.wieczorkep._switch.server.config.AppConfig;
-import pl.wieczorkep._switch.server.utils.factory.ExceptionFactory;
+import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.AppConfig;
+import pl.wieczorkep._switch.server.core.utils.factory.ExceptionFactory;
 
 import java.io.*;
 import java.time.DayOfWeek;
@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static pl.wieczorkep._switch.server.config.Action.Type;
+import static pl.wieczorkep._switch.server.core.Action.Type;
 
 public final class ActionUtils {
     private ActionUtils() {}

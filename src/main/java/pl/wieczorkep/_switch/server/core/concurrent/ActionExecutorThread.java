@@ -1,9 +1,9 @@
-package pl.wieczorkep._switch.server.concurrent;
+package pl.wieczorkep._switch.server.core.concurrent;
 
 import lombok.Getter;
 import lombok.NonNull;
-import pl.wieczorkep._switch.server.config.Action;
-import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.AppConfig;
 
 public class ActionExecutorThread extends Thread {
     private final AppConfig appConfig;

@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.controller;
+package pl.wieczorkep._switch.server.core;
 
 import lombok.NonNull;
 
@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SoundController implements LineListener {
+public class AudioPlayer implements LineListener {
     private ReentrantLock musicLock;
     private Thread thisThread;
     private Condition musicCondition;
 
-    public SoundController() {
+    public AudioPlayer() {
         this.musicLock = new ReentrantLock();
         this.musicCondition = musicLock.newCondition();
         this.thisThread = Thread.currentThread();
@@ -30,7 +30,7 @@ public class SoundController implements LineListener {
             DataLine.Info info = new DataLine.Info(Clip.class, audioFormat);
 
             Clip audioClip = (Clip) AudioSystem.getLine(info);
-            audioClip.addLineListener(new SoundController());
+            audioClip.addLineListener(new AudioPlayer());
             audioClip.open(audioStream);
 
             final float sampleRate = audioClip.getFormat().getSampleRate();

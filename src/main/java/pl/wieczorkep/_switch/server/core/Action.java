@@ -1,11 +1,11 @@
-package pl.wieczorkep._switch.server.config;
+package pl.wieczorkep._switch.server.core;
 
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
-import pl.wieczorkep._switch.server.config.executor.ActionExecutor;
-import pl.wieczorkep._switch.server.config.executor.SoundExecutor;
-import pl.wieczorkep._switch.server.config.extractor.ArgumentsExtractor;
-import pl.wieczorkep._switch.server.config.extractor.SoundPathExtractor;
+import pl.wieczorkep._switch.server.core.executor.ActionExecutor;
+import pl.wieczorkep._switch.server.core.executor.SoundExecutor;
+import pl.wieczorkep._switch.server.core.extractor.ArgumentsExtractor;
+import pl.wieczorkep._switch.server.core.extractor.SoundPathExtractor;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;

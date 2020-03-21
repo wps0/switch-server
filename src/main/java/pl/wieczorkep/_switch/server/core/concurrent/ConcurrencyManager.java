@@ -1,12 +1,12 @@
-package pl.wieczorkep._switch.server.concurrent;
+package pl.wieczorkep._switch.server.core.concurrent;
 
 import lombok.Getter;
-import pl.wieczorkep._switch.server.config.AppConfig;
+import pl.wieczorkep._switch.server.core.AppConfig;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static pl.wieczorkep._switch.server.concurrent.ConcurrencyUtils.prettifyThreadName;
+import static pl.wieczorkep._switch.server.core.concurrent.ConcurrencyUtils.prettifyThreadName;
 
 public class ConcurrencyManager {
     private Thread actionExecutorThread;

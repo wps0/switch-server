@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.concurrent;
+package pl.wieczorkep._switch.server.core.concurrent;
 
 public class ConcurrencyUtils {
     private ConcurrencyUtils() {}
