@@ -3,7 +3,7 @@ package pl.wieczorkep._switch.server;
 import lombok.Getter;
 import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
-import pl.wieczorkep._switch.server.core.utils.FileSystemUtils;
+import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.nio.file.FileSystemException;
@@ -18,7 +18,7 @@ public class SwitchSound {
     public static void main(String[] args) {
         config.init();
         try {
-            FileSystemUtils.initializeConfig(config);
+            ConfigUtils.initializeConfig(config);
         } catch (FileSystemException e) {
             config.getView().error(e.getMessage());
             config.getView().error(Arrays.toString(e.getStackTrace()));

@@ -9,7 +9,7 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-class FileSystemUtilsTest {
+class ConfigUtilsTest {
 
     private AppConfig appConfig;
 
@@ -28,7 +28,7 @@ class FileSystemUtilsTest {
         // when
         // then
         assertThrows(NullPointerException.class, () -> {
-            FileSystemUtils.initializeConfig(appConfig);
+            ConfigUtils.initializeConfig(appConfig);
         });
     }
 
@@ -45,7 +45,7 @@ class FileSystemUtilsTest {
 
         // then
         assertThrows(NullPointerException.class, () -> {
-            FileSystemUtils.initializeConfig(appConfig);
+            ConfigUtils.initializeConfig(appConfig);
         });
     }
 

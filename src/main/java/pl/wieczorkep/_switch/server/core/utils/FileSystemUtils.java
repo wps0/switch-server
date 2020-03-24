@@ -1,89 +1,55 @@
 package pl.wieczorkep._switch.server.core.utils;
 
 import lombok.Cleanup;
-import pl.wieczorkep._switch.server.core.AppConfig;
-import pl.wieczorkep._switch.server.core.utils.factory.ActionFactory;
+import lombok.NonNull;
+import pl.wieczorkep._switch.server.core.Action;
 
 import java.io.*;
-import java.nio.file.FileSystemException;
-
-import static pl.wieczorkep._switch.server.core.utils.ActionUtils.loadActions;
+import java.util.Arrays;
+import java.util.Optional;
 
 public final class FileSystemUtils {
     private FileSystemUtils() {}
 
-    public static void initializeConfig(AppConfig appConfig) throws FileSystemException {
-        // init
-        File configRoot = new File(appConfig.get(AppConfig.CONFIG_DIR));
-        File songsDir = new File(appConfig.get(AppConfig.SONGS_DIR));
-        File actionsDir = new File(appConfig.get(AppConfig.ACTIONS_DIR));
-
-        File configFile = new File(appConfig.get(AppConfig.CONFIG_FILE));
-        File actionsFile = new File(appConfig.get(AppConfig.ACTIONS_FILE));
-
-        boolean status = true;
-
-        // dir presence checks
-        if (!configRoot.exists())
-            status = configRoot.mkdir();
-
-        if (!songsDir.exists())
-            status &= songsDir.mkdir();
-
-        if (!actionsDir.exists())
-            status &= actionsDir.mkdir();
-
-        // file presence checks
-        try {
-            // BEGIN config file
-            if (!configFile.exists()) {
-                status &= configFile.createNewFile();
-
-                @Cleanup BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
-                AppConfig.getDefaultProperties().store(configOutputStream, "The main config file.\nRefer to siema for siema");
-
-            } else {
-                loadConfig(appConfig);
-            }
-            // END config file
-
-            // BEGIN example actions file
-            File exampleActionsFile = new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + "example.action.example");
-            if (!exampleActionsFile.exists()) {
-                ActionFactory actionFactory = new ActionFactory();
-                actionFactory.createActionFile(appConfig);
-            }
-            // END example actions file
-
-            // BEGIN actions file
-            if (!actionsFile.exists()) {
-                status &= actionsFile.createNewFile();
-
-                @Cleanup FileWriter registerWriter = new FileWriter(actionsFile);
-                registerWriter.write("# Each action file has to be registered here\n");
-                registerWriter.write("# Example:\n");
-                registerWriter.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
-                registerWriter.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
-                registerWriter.write("active=");
-            } else {
-                loadActions(appConfig);
-            }
-            // END actions file
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            appConfig.getView().error(e.toString());
+    /**
+     * @param fromAction The action for which the file should be created.
+     * @param actionsDir The directory where actions are stored.
+     * @return Optional
+     * @throws IOException When it is unable to create action's file
+     */
+    @NonNull
+    public static Optional<File> createActionFile(@NonNull Action fromAction, @NonNull File actionsDir) throws IOException {
+        File actionFile = new File(actionsDir, fromAction.getActionId());
+        if (!actionFile.exists() && !actionFile.createNewFile()) {
+            throw new IOException("Unable to create example actions file.");
         }
 
-        // when the creation failed, throw new exception
-        if (!status) {
-            throw new FileSystemException("Failed to create config files. Check permissions");
-        }
-    }
+        @Cleanup FileWriter actionWriter = new FileWriter(actionFile);
 
-    public static void loadConfig(AppConfig appConfig) throws IOException {
-        @Cleanup BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.CONFIG_FILE)));
-        appConfig.getProps().load(configInputStream);
+        actionWriter.write("# This is an example actions file\n");
+        actionWriter.write("# Each comment line starts with the '#' char\n");
+        actionWriter.write("#\n");
+
+        actionWriter.write("# Run your task at " + fromAction.getExecutionTime().getExecutionHour() + "\n");
+        actionWriter.write("# Acceptable values: 0-23\n");
+        actionWriter.write("#hour=" + fromAction.getExecutionTime().getExecutionHour() + "\n");
+
+        actionWriter.write("#\n");
+        actionWriter.write("# Run your task at the specific minute\n");
+        actionWriter.write("# Acceptable values: 0-59\n");
+        actionWriter.write("#minute=" + fromAction.getExecutionTime().getExecutionMinute() + "\n");
+
+        actionWriter.write("#\n");
+        actionWriter.write("# Run your task at the specified days\n");
+        actionWriter.write("# Acceptable values: {M, TU, W, TH, F, SA, SU}\n");
+        actionWriter.write("#days=" + ActionUtils.encodeDays(fromAction.getExecutionTime().getExecutionDays()) + "\n");
+
+        actionWriter.write("#\n");
+        actionWriter.write("# Type of the action\n");
+        actionWriter.write("# Acceptable values: " + Arrays.toString(Action.Type.values()).replace('[', '{').replace(']', '}') + "\n");
+        actionWriter.write("#type=" + fromAction.getType().name() + "\n"); // ToDo: test if this works correctly
+        actionWriter.write("#typeArguments=" + fromAction.getRawArguments() + "\n");
+
+        return Optional.of(actionFile);
     }
 }
