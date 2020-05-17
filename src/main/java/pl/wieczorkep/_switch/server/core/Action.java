@@ -2,10 +2,8 @@ package pl.wieczorkep._switch.server.core;
 
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
-import pl.wieczorkep._switch.server.core.executor.ActionExecutor;
-import pl.wieczorkep._switch.server.core.executor.SoundExecutor;
-import pl.wieczorkep._switch.server.core.extractor.ArgumentsExtractor;
-import pl.wieczorkep._switch.server.core.extractor.SoundPathExtractor;
+import pl.wieczorkep._switch.server.core.executor.*;
+import pl.wieczorkep._switch.server.core.extractor.*;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -76,7 +74,8 @@ public class Action implements Comparable<Action> {
     // ToDo: Type for notifying admins via email, client app on the windows computer.
     @AllArgsConstructor
     public enum Type {
-        PLAY_SOUND(new SoundPathExtractor(), new SoundExecutor());
+        PLAY_SOUND(new SoundPathExtractor(), new SoundExecutor()),
+        SPOTIFY_PLAY_PLAYLIST(new SpotifyPlaylistExtractor(), new SpotifyPlaylistExecutor());
 
         @Getter
         private ArgumentsExtractor argumentsExtractor;

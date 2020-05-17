@@ -30,10 +30,9 @@ public class AppConfig {
     public static final String ACTIONS_FILE = "actions.registry";
     public static final String ACTIONS_DIR = "actions.dir";
 
-    /**
-     * Max deviation of the specified execution time in seconds
-     */
-    public static final String ACTION_EXECUTION_TIME_MAX_DEVIATION = "acitons.maxDeviation";
+    public static final String ACTION_SPOTIFY_APPID = "actions.spotify.appid";
+    public static final String ACTION_SPOTIFY_APPSECRET = "actions.spotify.appsecret";
+    public static final String ACTION_SPOTIFY_AUTHSCOPES = "actions.spotify.authscope";
 
     // --- Execution properties ---
     public static final String BELL_ENABLE = "bell.enable";
@@ -158,11 +157,17 @@ public class AppConfig {
         // -- Specific files --
         defaultProperties.setProperty(CONFIG_FILE, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "config.props");
         defaultProperties.setProperty(ACTIONS_FILE, defaultProperties.getProperty(ACTIONS_DIR) + File.separatorChar + "actions.props");
-        defaultProperties.setProperty(ACTION_EXECUTION_TIME_MAX_DEVIATION, "30");
 
         // --- Execution properties ---
         defaultProperties.setProperty(BELL_ENABLE, "false");
         defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
+
+        // --- Spotify properties ---
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
+                        "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
+                        "playlist-read-private,app-remote-control");
 
         return defaultProperties;
     }
