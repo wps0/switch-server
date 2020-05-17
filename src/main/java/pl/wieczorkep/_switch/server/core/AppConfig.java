@@ -1,6 +1,8 @@
 package pl.wieczorkep._switch.server.core;
 
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.File;
@@ -16,6 +18,9 @@ public class AppConfig {
     private Properties props;
     // ToDo: problem z watchservice, bo set trzyma akcje w kolejnosci, w jakiej zostaly dodane.
     private TreeSet<Action> actions;
+    @Getter
+    private static final Logger logger = LogManager.getLogger();
+
     // ==!== Concurrency support ==!==
     @Getter
     private ReentrantLock actionsLock;
@@ -30,8 +35,7 @@ public class AppConfig {
     public static final String ACTIONS_FILE = "actions.registry";
     public static final String ACTIONS_DIR = "actions.dir";
 
-    public static final String ACTION_SPOTIFY_APPID = "actions.spotify.appid";
-    public static final String ACTION_SPOTIFY_APPSECRET = "actions.spotify.appsecret";
+    public static final String ACTION_SPOTIFY_APPKEY = "actions.spotify.appkey";
     public static final String ACTION_SPOTIFY_AUTHSCOPES = "actions.spotify.authscope";
 
     // --- Execution properties ---
@@ -44,7 +48,6 @@ public class AppConfig {
         this.actionsLock = new ReentrantLock();
         this.actionsChangeCondition = this.actionsLock.newCondition();
     }
-
 
     /**
      * Should always be called before using other methods
@@ -163,12 +166,10 @@ public class AppConfig {
         defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
 
         // --- Spotify properties ---
-        defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
-        defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPKEY, "NjRmNzhjOWE4YTUxNDEzYTg2MzY0ZGQ5OTcwZGFiYjY6MWNmNzFjMTRkYThlNGQ2Y2IyYTRjODM4ODVjZTE0YjQK");
         defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
                         "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
                         "playlist-read-private,app-remote-control");
-
         return defaultProperties;
     }
 
