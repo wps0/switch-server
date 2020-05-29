@@ -3,6 +3,8 @@ package pl.wieczorkep._switch.server.core;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.*;
@@ -27,20 +29,28 @@ public class AppConfig {
     private Condition actionsChangeCondition;
 
     // ==!== Config variables ==!==
-    public static final String CONFIG_DIR = "config_dir";
-    public static final String SONGS_DIR = "songs_dir";
-    public static final String CONFIG_FILE = "config_file";
+    // --- Prefixes ---
+    protected static final String PREFIX_ACTION = "actions.";
+    protected static final String PREFIX_SPOTIFY = PREFIX_ACTION + "spotify.";
+    protected static final String PREFIX_FILESYSTEM = "fs.";
+
+    // --- Filesystem ---
+    public static final String CONFIG_DIR = PREFIX_FILESYSTEM + "config_dir";
+    public static final String SONGS_DIR = PREFIX_FILESYSTEM + "songs_dir";
+    public static final String CONFIG_FILE = PREFIX_FILESYSTEM + "config_file";
 
     // --- Actions ---
-    public static final String ACTIONS_FILE = "actions.registry";
-    public static final String ACTIONS_DIR = "actions.dir";
+    public static final String ACTIONS_FILE = PREFIX_ACTION + "registry";
+    public static final String ACTIONS_DIR = PREFIX_ACTION + "dir";
 
-    public static final String ACTION_SPOTIFY_APPKEY = "actions.spotify.appkey";
-    public static final String ACTION_SPOTIFY_AUTHSCOPES = "actions.spotify.authscope";
+    public static final String ACTION_SPOTIFY_APPID = PREFIX_SPOTIFY + "appid";
+    public static final String ACTION_SPOTIFY_APPSECRET = PREFIX_SPOTIFY + "appsecret";
+    public static final String ACTION_SPOTIFY_AUTHSCOPES = PREFIX_SPOTIFY + "authscope";
+    public static final String ACTION_SPOTIFY_CLIENT_REFRESHTOKEN = PREFIX_SPOTIFY + "client.refreshtoken";
+    public static final String ACTION_SPOTIFY_CLIENT_TOKEN = PREFIX_SPOTIFY + "client.token";
 
-    // --- Execution properties ---
-    public static final String BELL_ENABLE = "bell.enable";
-    public static final String BELL_SOUND_FILE = "bell.sound_file";
+    public static final String BELL_ENABLE = PREFIX_ACTION + "bell.enable";
+    public static final String BELL_SOUND_FILE = PREFIX_ACTION + "bell.sound_file";
 
     public AppConfig(View view) {
         this.view = view;
@@ -60,7 +70,8 @@ public class AppConfig {
     ///////////////////////////////////////////////////////////////////////////
     // Storage operations
     ///////////////////////////////////////////////////////////////////////////
-    public String get(String key) {
+    @Nullable
+    public String get(@NotNull String key) {
         return props.getProperty(key);
     }
 
@@ -209,7 +220,7 @@ public class AppConfig {
         defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
 
         // --- Spotify properties ---
-        defaultProperties.setProperty(ACTION_SPOTIFY_APPKEY, "NjRmNzhjOWE4YTUxNDEzYTg2MzY0ZGQ5OTcwZGFiYjY6MWNmNzFjMTRkYThlNGQ2Y2IyYTRjODM4ODVjZTE0YjQK");
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
         defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
                         "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
                         "playlist-read-private,app-remote-control");
