@@ -56,17 +56,17 @@ public class SpotifyApiGateway {
      * @param accessCode User access code received from the request to {@link #getAuthUrl()}
      */
     public void exchangeAccessCodeToAuthToken(final String accessCode) {
-        makeSpotifyApiRequest("authorization_code",  "&code=" + accessCode + "&redirect_uri=http://localhost/");
+        makeSpotifyApiRequest(GrantType.AUTH_CODE,  "&code=" + accessCode + "&redirect_uri=http://localhost/");
     }
 
     public void refreshToken() {
         if (refreshToken == null) {
             throw new IllegalStateException("Refresh token was not set. Have you exchanged access token to auth token?");
         }
-        makeSpotifyApiRequest("refresh_token", "&refresh_token=" + refreshToken);
+        makeSpotifyApiRequest(GrantType.REFRESH, "&refresh_token=" + refreshToken);
     }
 
-    private void makeSpotifyApiRequest(final String grantType, final String additionalArguments) {
+    private void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
         final String refreshRequestParams = "grant_type=" + grantType + additionalArguments;
         // HTTP refresh request to the spotify api
@@ -98,12 +98,27 @@ public class SpotifyApiGateway {
 
         // TODO: czy to tak zadziała?
         this.authToken = responseJson.get("access_token").getAsString();
-        if (grantType.equalsIgnoreCase("authorization_code")) {
+        if (grantType == GrantType.AUTH_CODE) {
             this.refreshToken = responseJson.get("refresh_token").getAsString();
         }
         this.validity = responseJson.get("expires_in").getAsInt();
         this.lastRefresh = Instant.now().getEpochSecond();
 
         AppConfig.getLogger().info(format("Access code to auth token successfully exchanged! Validity: %d.", validity));
+    }
+
+    enum GrantType {
+        REFRESH("refresh_token"),
+        AUTH_CODE("authorization_code");
+
+        private String type;
+        GrantType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }
     }
 }
