@@ -26,9 +26,11 @@ public class SwitchSound {
             config.getView().error(e.getMessage());
             config.getView().error(Arrays.toString(e.getStackTrace()));
         }
-        spotifyApiGateway = new SpotifyApiGateway("64f78c9a8a51413a86364dd9970dabb6",
-                "15c49b6ace0f421d94c73f59754e0018", "user-read-playback-state,user-modify-playback-state",
+        spotifyApiGateway = new SpotifyApiGateway(config.get(AppConfig.ACTION_SPOTIFY_APPID),
+                config.get(AppConfig.ACTION_SPOTIFY_APPSECRET), "user-read-playback-state,user-modify-playback-state",
                 "http://localhost/");
+
+        spotifyApiGateway.setClientCredentials(config.get(AppConfig.ACTION_SPOTIFY_CLIENT_REFRESHTOKEN), config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN));
 
         concurrencyManager.init();
     }

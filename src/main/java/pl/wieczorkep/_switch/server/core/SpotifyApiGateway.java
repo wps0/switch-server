@@ -2,6 +2,7 @@ package pl.wieczorkep._switch.server.core;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import pl.wieczorkep._switch.server.SwitchSound;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +36,24 @@ public class SpotifyApiGateway {
         APP_CLIENT_SECRET = appClientSecret;
         APP_SCOPES = appScopes.replace(",", "%20");
         APP_CALLBACKURL = appCallbackUrl;
+    }
+
+
+    /**
+     * Try to read from config spotify client access token. If such token doesn't exist, nothing'll happen.
+     */
+    public void setClientCredentials(String authToken, String refreshToken) {
+        if (this.refreshToken == null || this.refreshToken.isEmpty()) {
+            this.refreshToken = refreshToken;
+        } else {
+            throw new SecurityException("cannot modify refresh token");
+        }
+
+        if (this.authToken == null || !this.authToken.isEmpty()) {
+            this.authToken = authToken;
+        } else {
+            throw new SecurityException("cannot modify auth token");
+        }
     }
 
     public boolean isTokenValid() {
@@ -98,8 +117,10 @@ public class SpotifyApiGateway {
 
         // TODO: czy to tak zadziała?
         this.authToken = responseJson.get("access_token").getAsString();
+        SwitchSound.getConfig().put(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN, this.authToken);
         if (grantType == GrantType.AUTH_CODE) {
             this.refreshToken = responseJson.get("refresh_token").getAsString();
+            SwitchSound.getConfig().put(AppConfig.ACTION_SPOTIFY_CLIENT_REFRESHTOKEN, this.refreshToken);
         }
         this.validity = responseJson.get("expires_in").getAsInt();
         this.lastRefresh = Instant.now().getEpochSecond();
