@@ -169,13 +169,6 @@ public class AppConfig {
         view.info("Loaded " + actionMap.size() + " actions");
     }
 
-    //
-    // === Actions ===
-    //
-    public Logger getLogger() {
-        return LOGGER;
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // Multithreading
     ///////////////////////////////////////////////////////////////////////////
@@ -225,5 +218,9 @@ public class AppConfig {
 
     public static long getReferenceTime() {
         return Instant.now().getEpochSecond();
+    }
+
+    public static Logger getLogger() {
+        return LOGGER;
     }
 }
