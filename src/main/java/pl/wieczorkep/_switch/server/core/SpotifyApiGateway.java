@@ -96,6 +96,7 @@ public class SpotifyApiGateway {
         JsonObject responseJson = JsonParser.parseString(refreshResponse.body()).getAsJsonObject();
         AppConfig.getLogger().trace(format("Received JSON: %s", responseJson));
 
+        // TODO: czy to tak zadziała?
         this.authToken = responseJson.get("access_token").getAsString();
         if (grantType.equalsIgnoreCase("authorization_code")) {
             this.refreshToken = responseJson.get("refresh_token").getAsString();

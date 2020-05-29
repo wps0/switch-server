@@ -7,7 +7,7 @@ import pl.wieczorkep._switch.server.core.utils.factory.ActionFactory;
 import java.io.*;
 import java.nio.file.FileSystemException;
 
-import static pl.wieczorkep._switch.server.core.utils.ActionUtils.loadActions;
+import static pl.wieczorkep._switch.server.core.utils.ActionLoader.loadActions;
 
 public final class ConfigUtils {
     private ConfigUtils() {}

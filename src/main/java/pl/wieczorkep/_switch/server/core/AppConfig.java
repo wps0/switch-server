@@ -5,7 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pl.wieczorkep._switch.server.view.View;
 
-import java.io.File;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
@@ -18,8 +19,7 @@ public class AppConfig {
     private Properties props;
     // ToDo: problem z watchservice, bo set trzyma akcje w kolejnosci, w jakiej zostaly dodane.
     private TreeSet<Action> actions;
-    @Getter
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     // ==!== Concurrency support ==!==
     @Getter
@@ -62,6 +62,49 @@ public class AppConfig {
     ///////////////////////////////////////////////////////////////////////////
     public String get(String key) {
         return props.getProperty(key);
+    }
+
+    private void put(String key, String value, boolean replace) {
+        if (props.get(key) != null && !replace) {
+            throw new IllegalStateException("config already contains " + key + " index");
+        }
+        props.setProperty(key, value);
+        try {
+            store();
+        } catch (IOException e) {
+            LOGGER.warn(e);
+        }
+    }
+
+    public void putIfNotExists(String key, String value) {
+        put(key, value, false);
+    }
+
+    /**
+     * Appends the value to default config file.
+     * Warning: if given key already exists, its value is replaced with given one.
+     */
+    public void put(String key, String value) {
+        put(key, value, true);
+    }
+
+    // TODO: wziąć to jakoś przepisać
+    private void store() throws IOException {
+        LOGGER.info("Saving config file...");
+        String configFilePath = get(AppConfig.CONFIG_FILE);
+        File originalConfig = new File(configFilePath);
+
+        if (!originalConfig.renameTo(new File(configFilePath + ".tmp"))) {
+            throw new IOException("cannot rename file " + configFilePath);
+        }
+
+        File newConfigFile = new File(configFilePath);
+        if (!newConfigFile.createNewFile()) {
+            originalConfig.renameTo(new File(configFilePath));
+            throw new IOException("cannot create file " + get(AppConfig.CONFIG_FILE));
+        }
+        FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
+        props.store(configOutputStream, "Config update: " + new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS\n"));
     }
 
     //
@@ -124,6 +167,13 @@ public class AppConfig {
             actionsLock.unlock();
         }
         view.info("Loaded " + actionMap.size() + " actions");
+    }
+
+    //
+    // === Actions ===
+    //
+    public Logger getLogger() {
+        return LOGGER;
     }
 
     ///////////////////////////////////////////////////////////////////////////

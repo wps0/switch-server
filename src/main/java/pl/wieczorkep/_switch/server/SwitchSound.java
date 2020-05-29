@@ -26,11 +26,11 @@ public class SwitchSound {
             config.getView().error(e.getMessage());
             config.getView().error(Arrays.toString(e.getStackTrace()));
         }
-        concurrencyManager.init();
-
         spotifyApiGateway = new SpotifyApiGateway("64f78c9a8a51413a86364dd9970dabb6",
                 "15c49b6ace0f421d94c73f59754e0018", "user-read-playback-state,user-modify-playback-state",
                 "http://localhost/");
+
+        concurrencyManager.init();
     }
 
     public static AppConfig getConfig() {
