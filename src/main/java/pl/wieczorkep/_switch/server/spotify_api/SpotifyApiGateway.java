@@ -1,11 +1,12 @@
-package pl.wieczorkep._switch.server.core;
+package pl.wieczorkep._switch.server.spotify_api;
 
 import com.google.gson.*;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SwitchSound;
-import pl.wieczorkep._switch.server.core.spotify_api.model.CurrentlyPlaying;
+import pl.wieczorkep._switch.server.core.AppConfig;
+import pl.wieczorkep._switch.server.spotify_api.model.CurrentlyPlaying;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,7 +15,7 @@ import java.time.Instant;
 import java.util.Base64;
 
 import static java.lang.String.format;
-import static pl.wieczorkep._switch.server.core.SpotifyApiGateway.AuthMethod.*;
+import static pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway.AuthMethod.*;
 
 public class SpotifyApiGateway {
     public static final String AUTH_ENDPOINT = "https://accounts.spotify.com";

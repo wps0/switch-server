@@ -4,9 +4,9 @@ import lombok.Getter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import pl.wieczorkep._switch.server.core.AppConfig;
-import pl.wieczorkep._switch.server.core.SpotifyApiGateway;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
 import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
+import pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.nio.file.FileSystemException;
