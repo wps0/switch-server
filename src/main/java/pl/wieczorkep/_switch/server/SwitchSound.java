@@ -1,6 +1,8 @@
 package pl.wieczorkep._switch.server;
 
 import lombok.Getter;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.core.SpotifyApiGateway;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
@@ -19,6 +21,8 @@ public class SwitchSound {
 
     // ToDo: cmd arguments handling
     public static void main(String[] args) {
+        // set logger level to Level.ALL for debug purposes
+        Configurator.setRootLevel(Level.ALL);
         config.init();
         try {
             ConfigUtils.initializeConfig(config);
@@ -26,11 +30,21 @@ public class SwitchSound {
             config.getView().error(e.getMessage());
             config.getView().error(Arrays.toString(e.getStackTrace()));
         }
+
         spotifyApiGateway = new SpotifyApiGateway(config.get(AppConfig.ACTION_SPOTIFY_APPID),
-                config.get(AppConfig.ACTION_SPOTIFY_APPSECRET), "user-read-playback-state,user-modify-playback-state",
+                config.get(AppConfig.ACTION_SPOTIFY_APPSECRET), config.get(AppConfig.ACTION_SPOTIFY_AUTHSCOPES),
                 "http://localhost/");
 
-        spotifyApiGateway.setClientCredentials(config.get(AppConfig.ACTION_SPOTIFY_CLIENT_REFRESHTOKEN), config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN));
+        System.out.println(spotifyApiGateway.getAuthUrl());
+
+        spotifyApiGateway.setClientCredentials(config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN), config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));
+
+        if (config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TMPCODE) != null && !config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TMPCODE).isEmpty()) {
+            spotifyApiGateway.exchangeAccessCodeToAuthToken(config.get(AppConfig.ACTION_SPOTIFY_CLIENT_TMPCODE));
+            config.put(AppConfig.ACTION_SPOTIFY_CLIENT_TMPCODE, "");
+        }
+
+        System.out.println(spotifyApiGateway.getUsersAvailableDevices());
 
         concurrencyManager.init();
     }
