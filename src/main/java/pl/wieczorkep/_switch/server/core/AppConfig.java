@@ -11,7 +11,6 @@ import pl.wieczorkep._switch.server.view.View;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
@@ -121,11 +120,11 @@ public class AppConfig {
         }
         @Cleanup
         FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
-        props.store(configOutputStream, "Config update: " + new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS\n"));
+        props.store(configOutputStream, "Auto saved config");
 
         // TODO: SECURITY: jakaś lepsza serializacja configu. Można w tym miejscu usunąć dowolny plik kończący się na
         //  .tmp z permisjami usera wykonującego aplikajcę (???)
-        Files.delete(Path.of(originalConfig.toURI()));
+        Files.delete(Path.of(new File(configFilePath + ".tmp").toURI()));
     }
 
     //

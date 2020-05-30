@@ -1,11 +1,11 @@
 package pl.wieczorkep._switch.server.core;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SwitchSound;
+import pl.wieczorkep._switch.server.core.spotify_api.model.CurrentlyPlaying;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +18,7 @@ import static pl.wieczorkep._switch.server.core.SpotifyApiGateway.AuthMethod.*;
 
 public class SpotifyApiGateway {
     public static final String AUTH_ENDPOINT = "https://accounts.spotify.com";
-    public static final String API_ENDPOINT = "https://api.spotify.com/v1/";
+    public static final String API_ENDPOINT = "https://api.spotify.com/v1";
     public static final String AUTH_ENDPOINT_AUTHORIZE = AUTH_ENDPOINT + "/authorize";
     public static final String AUTH_ENDPOINT_REFRESH = AUTH_ENDPOINT + "/api/token";
 
@@ -89,7 +89,7 @@ public class SpotifyApiGateway {
 
     public void refreshToken() {
         LOGGER.info("Refreshing access token...");
-        if (refreshToken == null) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
             throw new IllegalStateException("Refresh token was not set. Have you exchanged access token to auth token?");
         }
         makeSpotifyApiRequest(GrantType.REFRESH, "&refresh_token=" + refreshToken);
@@ -99,23 +99,25 @@ public class SpotifyApiGateway {
     // HTTP request methods
     ///////////////////////////////////////////////////////////////////////////
     public String getUsersAvailableDevices() {
-        return makeRequest(URI.create(API_ENDPOINT + "me/player/devices"), "", RequestMethod.GET, BEARER).body();
+        return makeRequest(URI.create(API_ENDPOINT + "/me/player/devices"), "", RequestMethod.GET, BEARER).body();
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // HTTP request API
     ///////////////////////////////////////////////////////////////////////////
     // TODO: przetestować
-    private HttpResponse<String> makeRequest(@NotNull URI uri,
+    protected HttpResponse<String> makeRequest(@NotNull URI uri,
                                              String arguments,
                                              @NotNull RequestMethod requestMethod,
                                              @NotNull AuthMethod authMethod) {
-        authMethod.set(APP_CLIENT_ID, APP_CLIENT_SECRET, authToken);
         LOGGER.trace(String.format("Making Spotify API request to %s (arguments: %s)", uri, arguments));
 
         if (!isTokenValid() && authMethod.isAuthTokenRequired()) {
             refreshToken();
         }
+        // Has to be after refresh token method call (refresh token might update current token) and if it had happened,
+        //  the request would have failed.
+        AuthMethod.set(APP_CLIENT_ID, APP_CLIENT_SECRET, authToken);
 
         // Depending on request method, URI has to be created in different ways.
         URI requestUri;
@@ -157,7 +159,7 @@ public class SpotifyApiGateway {
         return response;
     }
 
-    private void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
+    protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
         HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH), "grant_type=" + grantType + additionalArguments, RequestMethod.POST, BASIC);
 
@@ -241,7 +243,7 @@ public class SpotifyApiGateway {
         /**
          * Has to be called before calling any authString methods and refreshed periodically
          */
-        public void set(@NotNull String appClientId, @NotNull String appClientSecret, @NotNull String appAuthToken) {
+        public static void set(@NotNull String appClientId, @NotNull String appClientSecret, @NotNull String appAuthToken) {
             AuthMethod.appClientId = appClientId;
             AuthMethod.appClientSecret = appClientSecret;
             AuthMethod.appAuthToken = appAuthToken;
