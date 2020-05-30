@@ -1,5 +1,6 @@
 package pl.wieczorkep._switch.server.core;
 
+import lombok.Cleanup;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import pl.wieczorkep._switch.server.view.View;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
@@ -46,8 +49,10 @@ public class AppConfig {
     public static final String ACTION_SPOTIFY_APPID = PREFIX_SPOTIFY + "appid";
     public static final String ACTION_SPOTIFY_APPSECRET = PREFIX_SPOTIFY + "appsecret";
     public static final String ACTION_SPOTIFY_AUTHSCOPES = PREFIX_SPOTIFY + "authscope";
-    public static final String ACTION_SPOTIFY_CLIENT_REFRESHTOKEN = PREFIX_SPOTIFY + "client.refreshtoken";
+    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH = PREFIX_SPOTIFY + "client.refreshtoken";
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN = PREFIX_SPOTIFY + "client.token";
+    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY = PREFIX_SPOTIFY + "client.token.validity";
+    public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmpcode";
 
     public static final String BELL_ENABLE = PREFIX_ACTION + "bell.enable";
     public static final String BELL_SOUND_FILE = PREFIX_ACTION + "bell.sound_file";
@@ -114,8 +119,13 @@ public class AppConfig {
             originalConfig.renameTo(new File(configFilePath));
             throw new IOException("cannot create file " + get(AppConfig.CONFIG_FILE));
         }
+        @Cleanup
         FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
         props.store(configOutputStream, "Config update: " + new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS\n"));
+
+        // TODO: SECURITY: jakaś lepsza serializacja configu. Można w tym miejscu usunąć dowolny plik kończący się na
+        //  .tmp z permisjami usera wykonującego aplikajcę (???)
+        Files.delete(Path.of(originalConfig.toURI()));
     }
 
     //
@@ -221,9 +231,13 @@ public class AppConfig {
 
         // --- Spotify properties ---
         defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
         defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
-                        "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
-                        "playlist-read-private,app-remote-control");
+                "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
+                "playlist-read-private,app-remote-control");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
         return defaultProperties;
     }
 
@@ -233,5 +247,9 @@ public class AppConfig {
 
     public static Logger getLogger() {
         return LOGGER;
+    }
+
+    public static Logger getLogger(Class<?> callingClass) {
+        return LogManager.getLogger(callingClass);
     }
 }
