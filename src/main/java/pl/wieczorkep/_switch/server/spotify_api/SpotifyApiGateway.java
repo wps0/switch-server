@@ -1,12 +1,12 @@
 package pl.wieczorkep._switch.server.spotify_api;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import lombok.Getter;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SwitchSound;
 import pl.wieczorkep._switch.server.core.AppConfig;
-import pl.wieczorkep._switch.server.spotify_api.model.CurrentlyPlaying;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Base64;
 
 import static java.lang.String.format;
-import static pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway.AuthMethod.*;
+import static pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway.AuthMethod.BASIC;
 
 public class SpotifyApiGateway {
     public static final String AUTH_ENDPOINT = "https://accounts.spotify.com";
@@ -97,17 +97,12 @@ public class SpotifyApiGateway {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // HTTP request methods
-    ///////////////////////////////////////////////////////////////////////////
-    public String getUsersAvailableDevices() {
-        return makeRequest(URI.create(API_ENDPOINT + "/me/player/devices"), "", RequestMethod.GET, BEARER).body();
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     // HTTP request API
     ///////////////////////////////////////////////////////////////////////////
     // TODO: przetestować
-    protected HttpResponse<String> makeRequest(@NotNull URI uri,
+    // raczej not null na pierwszy rzut oka TODO: zweryfikować
+    @NotNull
+    HttpResponse<String> makeRequest(@NotNull URI uri,
                                              String arguments,
                                              @NotNull RequestMethod requestMethod,
                                              @NotNull AuthMethod authMethod) {

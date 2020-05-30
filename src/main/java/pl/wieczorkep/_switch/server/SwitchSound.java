@@ -7,6 +7,7 @@ import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
 import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
 import pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway;
+import pl.wieczorkep._switch.server.spotify_api.SpotifyMacros;
 import pl.wieczorkep._switch.server.view.ConsoleView;
 
 import java.nio.file.FileSystemException;
@@ -44,7 +45,8 @@ public class SwitchSound {
             config.put(AppConfig.ACTION_SPOTIFY_CLIENT_TMPCODE, "");
         }
 
-        System.out.println(spotifyApiGateway.getUsersAvailableDevices());
+        System.out.println(SpotifyMacros.Player.getAvailableDevices(spotifyApiGateway));
+        System.out.println(SpotifyMacros.Player.getPlaybackInfo(spotifyApiGateway));
 
         concurrencyManager.init();
     }
