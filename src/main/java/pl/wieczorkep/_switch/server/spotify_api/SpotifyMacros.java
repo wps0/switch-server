@@ -17,7 +17,7 @@ public class SpotifyMacros {
         private Player() {}
 
         /**
-         * @see <a href="https://developer.spotify.com/documentation/web-api/reference/player/get-information-about-the-users-current-playback/>Spotify API reference</a>
+         * @see <a href="https://developer.spotify.com/documentation/web-api/reference/player/get-information-about-the-users-current-playback/">Spotify API reference</a>
          */
         public static CurrentlyPlaying getPlaybackInfo(SpotifyApiGateway apiGateway) {
             return parse(apiGateway.makeRequest(URI.create(API_PREFIX),
