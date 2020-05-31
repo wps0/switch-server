@@ -45,13 +45,14 @@ public class AppConfig {
     public static final String ACTIONS_FILE = PREFIX_ACTION + "registry";
     public static final String ACTIONS_DIR = PREFIX_ACTION + "dir";
 
-    public static final String ACTION_SPOTIFY_APPID = PREFIX_SPOTIFY + "appid";
-    public static final String ACTION_SPOTIFY_APPSECRET = PREFIX_SPOTIFY + "appsecret";
-    public static final String ACTION_SPOTIFY_AUTHSCOPES = PREFIX_SPOTIFY + "authscope";
-    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH = PREFIX_SPOTIFY + "client.refreshtoken";
+    public static final String ACTION_SPOTIFY_APPID = PREFIX_SPOTIFY + "app-id";
+    public static final String ACTION_SPOTIFY_APPSECRET = PREFIX_SPOTIFY + "app-secret";
+    public static final String ACTION_SPOTIFY_AUTHSCOPES = PREFIX_SPOTIFY + "auth-scope";
+    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH = PREFIX_SPOTIFY + "client.refresh-token";
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN = PREFIX_SPOTIFY + "client.token";
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY = PREFIX_SPOTIFY + "client.token.validity";
-    public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmpcode";
+    public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmp-code";
+    public static final String ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE = PREFIX_SPOTIFY + "client.default-device";
 
     public static final String BELL_ENABLE = PREFIX_ACTION + "bell.enable";
     public static final String BELL_SOUND_FILE = PREFIX_ACTION + "bell.sound_file";
@@ -237,6 +238,7 @@ public class AppConfig {
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN, "");
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, "");
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE, "");
         return defaultProperties;
     }
 
