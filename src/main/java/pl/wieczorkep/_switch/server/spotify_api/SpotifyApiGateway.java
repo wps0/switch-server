@@ -136,6 +136,9 @@ public class SpotifyApiGateway {
             case GET:
                 requestBuilder.GET();
                 break;
+            case PUT:
+                requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(arguments));
+                break;
             default:
                 throw new UnsupportedOperationException("unsupported request method: " + requestMethod);
         }
@@ -207,7 +210,7 @@ public class SpotifyApiGateway {
     }
 
     public enum RequestMethod {
-        GET, POST
+        GET, POST, PUT
     }
 
     public enum AuthMethod {

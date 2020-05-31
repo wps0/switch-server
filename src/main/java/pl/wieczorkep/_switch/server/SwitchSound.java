@@ -47,7 +47,8 @@ public class SwitchSound {
 
         System.out.println(SpotifyMacros.Player.getAvailableDevices(spotifyApiGateway));
         System.out.println(SpotifyMacros.Player.getPlaybackInfo(spotifyApiGateway));
-
+//        System.out.println(SpotifyMacros.Player.pausePlayback(spotifyApiGateway, config.get(AppConfig.ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE)));
+//        System.out.println(SpotifyMacros.Player.changeVolume(spotifyApiGateway, config.get(AppConfig.ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE), 35));
         concurrencyManager.init();
     }
 
