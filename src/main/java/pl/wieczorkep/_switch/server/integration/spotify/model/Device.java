@@ -1,4 +1,4 @@
-package pl.wieczorkep._switch.server.spotify_api.model;
+package pl.wieczorkep._switch.server.integration.spotify.model;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;

@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.util.Optional;
 
+import static pl.wieczorkep._switch.server.Constants.ACTIONS_DIR;
+
 public class ActionFactory {
     public static Action createExampleAction() {
         return new Action(
@@ -23,7 +25,7 @@ public class ActionFactory {
     }
 
     public Optional<File> createActionFile(AppConfig appConfig) throws IOException {
-        return createActionFile(createExampleAction(), new File(appConfig.get(AppConfig.ACTIONS_DIR)));
+        return createActionFile(createExampleAction(), new File(appConfig.get(ACTIONS_DIR)));
     }
 
     /**
@@ -31,6 +33,7 @@ public class ActionFactory {
      * @param actionsDir The directory where actions are stored.
      * @return Optional
      * @throws IOException When it is unable to create action's file
+     * @deprecated ?
      */
     @NonNull
     @Deprecated

@@ -1,8 +1,8 @@
 package pl.wieczorkep._switch.server.core.concurrent;
 
-import pl.wieczorkep._switch.server.SwitchSound;
+import lombok.extern.log4j.Log4j2;
+import pl.wieczorkep._switch.server.Server;
 import pl.wieczorkep._switch.server.core.Action;
-import pl.wieczorkep._switch.server.core.AppConfig;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -11,17 +11,18 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+@Log4j2
 public class ActionSupervisorThread implements Runnable {
     private boolean running;
     private ScheduledExecutorService executorService;
     private ScheduledFuture<?> scheduledFuture;
     private ActionExecutorThread actionExecutorThread;
-    private AppConfig appConfig;
+    private Server server;
     private ReentrantLock lock;
 
-    public ActionSupervisorThread(AppConfig appConfig) {
+    public ActionSupervisorThread(Server server) {
         this.executorService = Executors.newSingleThreadScheduledExecutor();
-        this.appConfig = appConfig;
+        this.server = server;
         this.running = false;
         this.lock = new ReentrantLock();
     }
@@ -36,24 +37,24 @@ public class ActionSupervisorThread implements Runnable {
         scheduleAction();
 
         while (running) {
-            appConfig.getView().debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
+            LOGGER.debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
 
             try {
-                appConfig.awaitActionChange();
+                server.getConfig().awaitActionChange();
 
                 scheduleAction();
             } catch (InterruptedException e) {
-                appConfig.getView().info("AwaitActionChange condition was interrupted");
+                LOGGER.info("AwaitActionChange condition was interrupted");
             } catch (Exception e) {
-                appConfig.getView().error("Exception thrown!");
+                LOGGER.error("Exception thrown!");
                 e.printStackTrace();
 
                 try {
-                    ConcurrencyManager concurrencyManager = SwitchSound.getConcurrencyManager();
+                    ConcurrencyManager concurrencyManager = server.getConcurrencyManager();
                     concurrencyManager.getLock().lock();
                     concurrencyManager.getThreadErrorCondition().signalAll();
                 } finally {
-                    SwitchSound.getConcurrencyManager().getLock().unlock();
+                    server.getConcurrencyManager().getLock().unlock();
                 }
             }
         }
@@ -63,7 +64,7 @@ public class ActionSupervisorThread implements Runnable {
         // moze sie cos popsuc jesli w trakcie, gdy jeden watek sprobuje zaplanowac, drugi doda cos jako firstEntry,
         //  i trzeci sprobuje znowu zaplanowac(?)
         // ToDo: investigate
-        Optional<Action> topActionOptional = appConfig.getFirstAction();
+        Optional<Action> topActionOptional = server.getConfig().getFirstAction();
         if (!topActionOptional.isPresent()) {
             return;
         }
@@ -76,19 +77,18 @@ public class ActionSupervisorThread implements Runnable {
         try {
             if (scheduledFuture != null) {
                 long remainingTime = scheduledFuture.getDelay(MILLISECONDS);
-                appConfig.getView().debug("Remaining time of the current action: " + remainingTime + "; top action's remaining time: " + topAction.getExecutionTime().getTime(MILLISECONDS));
+                LOGGER.debug("Remaining time of the current action: " + remainingTime + "; top action's remaining time: " + topAction.getExecutionTime().getTime(MILLISECONDS));
 
                 // Interrupt the current action and plan the new, earlier one.
                 if (scheduledFuture.isDone() || remainingTime > topAction.getExecutionTime().getTime(MILLISECONDS)) {
                     // Knowing the new action is more appropriate, cancel the previous one.
                     cancelAction();
                     // Refresh the action's position in the AppConfig internal set.
-                    appConfig.refreshPosition(actionExecutorThread.getTargetAction());
+                    server.getConfig().refreshPosition(actionExecutorThread.getTargetAction());
 
                     // The top action is the currently executed one
                     if (remainingTime < 0) {
-                        topAction = appConfig.getFirstAction()
-                                .orElse(topAction);
+                        topAction = server.getConfig().getFirstAction().orElse(topAction);
                     }
 
                     planAction(topAction);
@@ -104,21 +104,21 @@ public class ActionSupervisorThread implements Runnable {
     }
 
     private void cancelAction() {
-        appConfig.getView().debug("Cancelling current action...");
+        LOGGER.debug("Cancelling current action...");
 
         scheduledFuture.cancel(true);
         // todo: czy to nie wywali jakiegos bledu?
         actionExecutorThread.interrupt();
 
-        appConfig.getView().debug("Successfully cancelled current action!");
+        LOGGER.debug("Successfully cancelled current action!");
     }
 
     private void planAction(Action newAction) {
-        appConfig.getView().debug("Planning " + newAction);
-        actionExecutorThread = new ActionExecutorThread(appConfig, newAction);
+        LOGGER.debug("Planning " + newAction);
+        actionExecutorThread = new ActionExecutorThread(server.getConfig(), newAction);
         long s;
         scheduledFuture = executorService.schedule(actionExecutorThread, s = newAction.getExecutionTime().getTime(MILLISECONDS), MILLISECONDS);
-        appConfig.getView().debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
+        LOGGER.debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
 
     }
 }

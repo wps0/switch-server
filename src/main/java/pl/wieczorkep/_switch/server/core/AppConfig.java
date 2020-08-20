@@ -2,11 +2,9 @@ package pl.wieczorkep._switch.server.core;
 
 import lombok.Cleanup;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pl.wieczorkep._switch.server.view.View;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,49 +14,23 @@ import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static pl.wieczorkep._switch.server.Constants.*;
+
+@Log4j2
 public class AppConfig {
-    @Getter
-    private View view;
     @Getter
     private Properties props;
     // ToDo: problem z watchservice, bo set trzyma akcje w kolejnosci, w jakiej zostaly dodane.
     private TreeSet<Action> actions;
-    private static final Logger LOGGER = LogManager.getLogger();
 
     // ==!== Concurrency support ==!==
     @Getter
     private ReentrantLock actionsLock;
     private Condition actionsChangeCondition;
 
-    // ==!== Config variables ==!==
-    // --- Prefixes ---
-    protected static final String PREFIX_ACTION = "actions.";
-    protected static final String PREFIX_SPOTIFY = PREFIX_ACTION + "spotify.";
-    protected static final String PREFIX_FILESYSTEM = "fs.";
 
-    // --- Filesystem ---
-    public static final String CONFIG_DIR = PREFIX_FILESYSTEM + "config_dir";
-    public static final String SONGS_DIR = PREFIX_FILESYSTEM + "songs_dir";
-    public static final String CONFIG_FILE = PREFIX_FILESYSTEM + "config_file";
 
-    // --- Actions ---
-    public static final String ACTIONS_FILE = PREFIX_ACTION + "registry";
-    public static final String ACTIONS_DIR = PREFIX_ACTION + "dir";
-
-    public static final String ACTION_SPOTIFY_APPID = PREFIX_SPOTIFY + "app-id";
-    public static final String ACTION_SPOTIFY_APPSECRET = PREFIX_SPOTIFY + "app-secret";
-    public static final String ACTION_SPOTIFY_AUTHSCOPES = PREFIX_SPOTIFY + "auth-scope";
-    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH = PREFIX_SPOTIFY + "client.refresh-token";
-    public static final String ACTION_SPOTIFY_CLIENT_TOKEN = PREFIX_SPOTIFY + "client.token";
-    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY = PREFIX_SPOTIFY + "client.token.validity";
-    public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmp-code";
-    public static final String ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE = PREFIX_SPOTIFY + "client.default-device";
-
-    public static final String BELL_ENABLE = PREFIX_ACTION + "bell.enable";
-    public static final String BELL_SOUND_FILE = PREFIX_ACTION + "bell.sound_file";
-
-    public AppConfig(View view) {
-        this.view = view;
+    public AppConfig() {
         this.actions = new TreeSet<>();
         this.actionsLock = new ReentrantLock();
         this.actionsChangeCondition = this.actionsLock.newCondition();
@@ -69,7 +41,6 @@ public class AppConfig {
      */
     public void init() {
         this.props = new Properties(getDefaultProperties());
-        view.init();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -107,7 +78,7 @@ public class AppConfig {
     // TODO: wziąć to jakoś przepisać
     private void store() throws IOException {
         LOGGER.info("Saving config file...");
-        String configFilePath = get(AppConfig.CONFIG_FILE);
+        String configFilePath = get(CONFIG_FILE);
         File originalConfig = new File(configFilePath);
 
         if (!originalConfig.renameTo(new File(configFilePath + ".tmp"))) {
@@ -117,7 +88,7 @@ public class AppConfig {
         File newConfigFile = new File(configFilePath);
         if (!newConfigFile.createNewFile()) {
             originalConfig.renameTo(new File(configFilePath));
-            throw new IOException("cannot create file " + get(AppConfig.CONFIG_FILE));
+            throw new IOException("cannot create file " + get(CONFIG_FILE));
         }
         @Cleanup
         FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
@@ -136,7 +107,7 @@ public class AppConfig {
         try {
             return Optional.ofNullable(actions.first());
         } catch (NoSuchElementException e) {
-            view.debug(e.getMessage() + "; an empty optional will be returned");
+            LOGGER.trace(e.getMessage() + "; an empty optional will be returned");
             return Optional.empty();
         } finally {
             actionsLock.unlock();
@@ -164,7 +135,7 @@ public class AppConfig {
 
     public void putAction(Action action) {
         addAction(action);
-        view.info("Loaded 1 action.");
+        LOGGER.info("Loaded 1 action.");
     }
 
     private void addAction(Action action) {
@@ -187,7 +158,7 @@ public class AppConfig {
         } finally {
             actionsLock.unlock();
         }
-        view.info("Loaded " + actionMap.size() + " actions");
+        LOGGER.info("Loaded " + actionMap.size() + " actions");
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -225,10 +196,6 @@ public class AppConfig {
         defaultProperties.setProperty(CONFIG_FILE, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "config.props");
         defaultProperties.setProperty(ACTIONS_FILE, defaultProperties.getProperty(ACTIONS_DIR) + File.separatorChar + "actions.props");
 
-        // --- Execution properties ---
-        defaultProperties.setProperty(BELL_ENABLE, "false");
-        defaultProperties.setProperty(BELL_SOUND_FILE, defaultProperties.getProperty(SONGS_DIR) + File.separatorChar + "DZWONEK.wav");
-
         // --- Spotify properties ---
         defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
         defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
@@ -244,13 +211,5 @@ public class AppConfig {
 
     public static long getReferenceTime() {
         return Instant.now().getEpochSecond();
-    }
-
-    public static Logger getLogger() {
-        return LOGGER;
-    }
-
-    public static Logger getLogger(Class<?> callingClass) {
-        return LogManager.getLogger(callingClass);
     }
 }

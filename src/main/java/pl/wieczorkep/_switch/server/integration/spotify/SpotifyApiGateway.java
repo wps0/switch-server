@@ -1,12 +1,12 @@
-package pl.wieczorkep._switch.server.spotify_api;
+package pl.wieczorkep._switch.server.integration.spotify;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.Getter;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import pl.wieczorkep._switch.server.SwitchSound;
-import pl.wieczorkep._switch.server.core.AppConfig;
+import pl.wieczorkep._switch.server.Server;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,35 +15,37 @@ import java.time.Instant;
 import java.util.Base64;
 
 import static java.lang.String.format;
-import static pl.wieczorkep._switch.server.spotify_api.SpotifyApiGateway.AuthMethod.BASIC;
+import static pl.wieczorkep._switch.server.Constants.*;
+import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.AuthMethod.BASIC;
 
+@Log4j2
 public class SpotifyApiGateway {
     public static final String AUTH_ENDPOINT = "https://accounts.spotify.com";
     public static final String API_ENDPOINT = "https://api.spotify.com/v1";
     public static final String AUTH_ENDPOINT_AUTHORIZE = AUTH_ENDPOINT + "/authorize";
     public static final String AUTH_ENDPOINT_REFRESH = AUTH_ENDPOINT + "/api/token";
 
-    private final String APP_CLIENT_ID;
-    private final String APP_CLIENT_SECRET;
-    private final String APP_SCOPES;
-    private final String APP_CALLBACKURL;
-
-    private static final Logger LOGGER = AppConfig.getLogger(SpotifyApiGateway.class);
+    private final String appClientId;
+    private final String appClientSecret;
+    private final String appScopes;
+    private final String appCallbackUrl;
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .build();
 
+    private Server server;
     private String authToken;
     private String refreshToken;
     private int validity;
     private long lastRefresh;
 
-    public SpotifyApiGateway(String appClientId, String appClientSecret, String appScopes, String appCallbackUrl) {
-        APP_CLIENT_ID = appClientId;
-        APP_CLIENT_SECRET = appClientSecret;
-        APP_SCOPES = appScopes.replace(",", "%20");
-        APP_CALLBACKURL = appCallbackUrl;
+    public SpotifyApiGateway(Server server, String appClientId, String appClientSecret, String appScopes, String appCallbackUrl) {
+        this.server = server;
+        this.appClientId = appClientId;
+        this.appClientSecret = appClientSecret;
+        this.appScopes = appScopes.replace(",", "%20");
+        this.appCallbackUrl = appCallbackUrl;
         this.validity = -1;
         this.lastRefresh = -1;
     }
@@ -53,17 +55,15 @@ public class SpotifyApiGateway {
      * Try to read from config spotify client access token. If such token doesn't exist, nothing'll happen.
      */
     public void setClientCredentials(String authToken, String refreshToken) {
-        if (this.refreshToken == null || this.refreshToken.isEmpty()) {
-            this.refreshToken = refreshToken;
-        } else {
+        if (this.refreshToken != null && !this.refreshToken.isEmpty()) {
             throw new SecurityException("cannot modify refresh token");
         }
+        this.refreshToken = refreshToken;
 
-        if (this.authToken == null || !this.authToken.isEmpty()) {
-            this.authToken = authToken;
-        } else {
+        if (this.authToken != null && !this.authToken.isEmpty()) {
             throw new SecurityException("cannot modify auth token");
         }
+        this.authToken = authToken;
     }
 
     public boolean isTokenValid() {
@@ -74,10 +74,10 @@ public class SpotifyApiGateway {
      * @return Spotify API url used by user to gain auth code
      */
     public String getAuthUrl() {
-        return AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(APP_CLIENT_ID)
+        return AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
                 .concat("&response_type=code")
-                .concat("&redirect_uri=").concat(APP_CALLBACKURL)
-                .concat("&scope=").concat(APP_SCOPES);
+                .concat("&redirect_uri=").concat(appCallbackUrl)
+                .concat("&scope=").concat(appScopes);
     }
 
     /**
@@ -103,41 +103,38 @@ public class SpotifyApiGateway {
     // raczej not null na pierwszy rzut oka TODO: zweryfikować
     @NotNull
     HttpResponse<String> makeRequest(@NotNull URI uri,
-                                             String arguments,
-                                             @NotNull RequestMethod requestMethod,
-                                             @NotNull AuthMethod authMethod) {
-        LOGGER.trace(String.format("Making Spotify API request to %s (arguments: %s)", uri, arguments));
+                                     @NotNull String headerArguments,
+                                     @NotNull String bodyArguments,
+                                     @NotNull RequestMethod requestMethod,
+                                     @NotNull AuthMethod authMethod) {
+        LOGGER.trace(String.format("Making Spotify API request to %s (arguments: %s; body arguments: %s)", uri, headerArguments, bodyArguments));
 
         if (!isTokenValid() && authMethod.isAuthTokenRequired()) {
             refreshToken();
         }
         // Has to be after refresh token method call (refresh token might update current token) and if it had happened,
         //  the request would have failed.
-        AuthMethod.set(APP_CLIENT_ID, APP_CLIENT_SECRET, authToken);
-
-        // Depending on request method, URI has to be created in different ways.
-        URI requestUri;
-        if (requestMethod == RequestMethod.GET) {
-            requestUri = URI.create(uri + arguments);
-        } else {
-            requestUri = uri;
-        }
+        AuthMethod.set(appClientId, appClientSecret, authToken);
 
         // HTTP refresh request to the spotify api
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(requestUri)
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .setHeader("Content-Type", "application/x-www-form-urlencoded")
                 .setHeader("Authorization", authMethod.authString());
 
+        // Depending on request method, URI has to be created in different ways.
         switch (requestMethod) {
             case POST:
-                requestBuilder.POST(HttpRequest.BodyPublishers.ofString(arguments));
+                requestBuilder.uri(uri)
+                        .POST(HttpRequest.BodyPublishers.ofString(headerArguments));
                 break;
             case GET:
-                requestBuilder.GET();
+                requestBuilder.uri(URI.create(uri + "?" + headerArguments))
+                        .GET();
                 break;
             case PUT:
-                requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(arguments));
+                requestBuilder.uri(URI.create(uri + "?" + headerArguments))
+                        .PUT(HttpRequest.BodyPublishers.ofString(bodyArguments));
                 break;
             default:
                 throw new UnsupportedOperationException("unsupported request method: " + requestMethod);
@@ -153,20 +150,20 @@ public class SpotifyApiGateway {
             LOGGER.error("Failed to make Spotify API refresh request", e);
         }
 
-        LOGGER.debug(String.format("Spotify API request returned code %d", response.statusCode()));
+        LOGGER.debug(String.format("Spotify API request returned code %d (response: %s)", response.statusCode(), response.body()));
 
         return response;
     }
 
     protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
-        HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH), "grant_type=" + grantType + additionalArguments, RequestMethod.POST, BASIC);
+        HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH), "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
 
         // TODO: zweryfikować, czy jakieś inne kody też są poprawne (np. redirect) i jak je obsłużyć
         if (refreshResponse.statusCode() != 200) {
             LOGGER.error("Failed to make Spotify API request");
             LOGGER.error(refreshResponse);
-            throw new RuntimeException("HTTP response code (" + refreshResponse.statusCode() + ") is other than 200! Response from Spotify API: " + refreshResponse.body());
+            throw new InvalidRequestStateException("HTTP response code (" + refreshResponse.statusCode() + ") is other than 200! Response from Spotify API: " + refreshResponse.body());
         }
 
         // Parse response
@@ -186,19 +183,19 @@ public class SpotifyApiGateway {
 
     private void setAuthToken(final String newToken) {
         this.authToken = newToken;
-        SwitchSound.getConfig().put(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN, newToken);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN, newToken);
     }
 
     private void setRefreshToken(final String newToken) {
         this.refreshToken = newToken;
-        SwitchSound.getConfig().put(AppConfig.ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, newToken);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, newToken);
     }
 
     enum GrantType {
         REFRESH("refresh_token"),
         AUTH_CODE("authorization_code");
 
-        private String type;
+        private final String type;
         GrantType(String type) {
             this.type = type;
         }
@@ -248,11 +245,11 @@ public class SpotifyApiGateway {
             AuthMethod.appAuthToken = appAuthToken;
 
             if (appClientId.isEmpty()) {
-                throw new IllegalArgumentException(AppConfig.ACTION_SPOTIFY_APPID + " not set");
+                throw new IllegalArgumentException(ACTION_SPOTIFY_APPID + " not set");
             }
 
             if (appClientSecret.isEmpty()) {
-                throw new IllegalArgumentException(AppConfig.ACTION_SPOTIFY_APPSECRET + " not set");
+                throw new IllegalArgumentException(ACTION_SPOTIFY_APPSECRET + " not set");
             }
         }
 

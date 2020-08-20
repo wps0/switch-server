@@ -1,48 +1,50 @@
 package pl.wieczorkep._switch.server.core.concurrent;
 
 import lombok.Getter;
-import pl.wieczorkep._switch.server.core.AppConfig;
+import lombok.extern.log4j.Log4j2;
+import pl.wieczorkep._switch.server.Server;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static pl.wieczorkep._switch.server.core.concurrent.ConcurrencyUtils.prettifyThreadName;
 
+@Log4j2
 public class ConcurrencyManager {
     private Thread actionExecutorThread;
-    private final AppConfig appConfig;
+    @Getter
+    private Server server;
     @Getter
     private final ReentrantLock lock;
     @Getter
     private final Condition threadErrorCondition;
 
-    public ConcurrencyManager(AppConfig appConfig) {
-        this.appConfig = appConfig;
+    public ConcurrencyManager() {
         this.lock = new ReentrantLock();
         this.threadErrorCondition = lock.newCondition();
     }
 
-    public void init() {
-        appConfig.getView().debug("Creating threads...");
+    public void init(Server srv) {
+        LOGGER.debug("Creating threads...");
+        server = srv;
         initActionExecutor();
-
-        appConfig.getView().debug("Threads created successfully");
+        LOGGER.debug("Threads created successfully");
     }
 
     public void monitor() {
-        appConfig.getView().info("Monitoring threads...");
+        LOGGER.info("Monitoring threads...");
         while (true) {
             lock.lock();
             try {
                 threadErrorCondition.await();
 
                 if (!actionExecutorThread.isAlive()) {
-                    appConfig.getView().info("ActionExecutorThread is not alive! Initializing...");
+                    LOGGER.info("ActionExecutorThread is not alive! Initializing...");
                     initActionExecutor();
                 }
 
             } catch (InterruptedException e) {
-                appConfig.getView().info("Monitor thread was interrupted.");
+                LOGGER.info("Monitor thread was interrupted.");
             } finally {
                 lock.unlock();
             }
@@ -50,10 +52,10 @@ public class ConcurrencyManager {
     }
 
     private void initActionExecutor() {
-        appConfig.getView().debug("Initializing ActionExecutorThread...");
-        actionExecutorThread = new Thread(new ActionSupervisorThread(appConfig));
+        LOGGER.debug("Initializing ActionExecutorThread...");
+        actionExecutorThread = new Thread(new ActionSupervisorThread(server));
         actionExecutorThread.setName(prettifyThreadName(actionExecutorThread));
         actionExecutorThread.start();
-        appConfig.getView().debug("Initialization successful!");
+        LOGGER.debug("Initialization successful!");
     }
 }

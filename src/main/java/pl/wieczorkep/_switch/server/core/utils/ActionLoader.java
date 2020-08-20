@@ -2,7 +2,7 @@ package pl.wieczorkep._switch.server.core.utils;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
-import pl.wieczorkep._switch.server.SwitchSound;
+import lombok.extern.log4j.Log4j2;
 import pl.wieczorkep._switch.server.core.Action;
 import pl.wieczorkep._switch.server.core.AppConfig;
 
@@ -12,11 +12,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static pl.wieczorkep._switch.server.Constants.*;
+
+@Log4j2
 public class ActionLoader {
+    private ActionLoader() {}
+
     public static void loadActions(AppConfig appConfig) throws IOException {
-        appConfig.getView().info("Loading actions...");
+        LOGGER.info("Loading actions...");
         @Cleanup
-        BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(AppConfig.ACTIONS_FILE)));
+        BufferedInputStream actionsInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(ACTIONS_FILE)));
 
         Properties activeActions = new Properties();
         activeActions.load(actionsInputStream);
@@ -28,7 +33,7 @@ public class ActionLoader {
                 .filter(actionId -> actionId.length() > 0)
                 .map(actionId -> actionId.trim() + ".action")
                 .distinct()
-                .map(actionFile -> loadAction(new File(appConfig.get(AppConfig.ACTIONS_DIR) + File.separatorChar + actionFile)))
+                .map(actionFile -> loadAction(new File(appConfig.get(ACTIONS_DIR) + File.separatorChar + actionFile)))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet()));
     }
@@ -65,8 +70,8 @@ public class ActionLoader {
                     actionFile.getName()
             );
         } catch (Exception e) {
-            SwitchSound.getConfig().getView().error("Could not load " + actionFile.getName() + "; " + e.getLocalizedMessage());
-            e.printStackTrace();
+            LOGGER.error("Could not load " + actionFile.getName() + "; " + e.getLocalizedMessage());
+            LOGGER.error(e);
         }
         return null;
     }
