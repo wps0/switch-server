@@ -1,7 +1,5 @@
 package pl.wieczorkep._switch.server.core.utils;
 
-import pl.wieczorkep._switch.server.core.utils.factory.ExceptionFactory;
-
 import java.time.DayOfWeek;
 
 public final class ActionUtils {

@@ -2,10 +2,8 @@ package pl.wieczorkep._switch.server.core;
 
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
-import pl.wieczorkep._switch.server.core.executor.ActionExecutor;
-import pl.wieczorkep._switch.server.core.executor.SoundExecutor;
-import pl.wieczorkep._switch.server.core.extractor.ArgumentsExtractor;
-import pl.wieczorkep._switch.server.core.extractor.SoundPathExtractor;
+import pl.wieczorkep._switch.server.core.executor.*;
+import pl.wieczorkep._switch.server.core.extractor.*;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -15,38 +13,27 @@ import java.util.concurrent.TimeUnit;
 
 @EqualsAndHashCode
 @ToString
+@RequiredArgsConstructor
 public class Action implements Comparable<Action> {
-    @Getter
-    private ExecutionTime executionTime;
-    @Getter
-    private Type type;
-    private String typeArguments;
-    /**
-     * Contains extracted arguments.
-     * ToDo: add live reload support
-     */
-    private Properties arguments;
     /**
      * An action id specified by the user (generally the path to an action inside the action dir,
      * including '.action' file extension).
      */
-    @Getter
-    @NonNull
+    @Getter @NonNull
     private final String actionId;
-
-    public Action(ExecutionTime executionTime, Type type, String typeArguments, String actionId) {
-        this.executionTime = executionTime;
-        this.type = type;
-        this.typeArguments = typeArguments;
-        this.actionId = actionId;
-    }
-
-    public Action(byte executionHour, byte executionMinute, DayOfWeek[] executionDays, Type type, String typeArguments, final @NonNull String actionId) {
-        this(new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments, actionId);
-    }
+    @Getter
+    private final ExecutionTime executionTime;
+    @Getter
+    private final Type type;
+    private final String typeArguments;
+    /**
+     * Contains extracted arguments.
+     * TODO: add live reload support
+     */
+    private Properties arguments;
 
     public Action(int executionHour, int executionMinute, DayOfWeek[] executionDays, Type type, String typeArguments, final @NonNull String actionId) {
-        this(new ExecutionTime((byte) executionHour, (byte) executionMinute, executionDays), type, typeArguments, actionId);
+        this(actionId, new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments);
     }
 
     public String getRawArguments() {
@@ -73,17 +60,16 @@ public class Action implements Comparable<Action> {
     }
 
 
-    // ToDo: Type for notifying admins via email, client app on the windows computer.
+    // TODO: Email notifications, client app notifications
     @AllArgsConstructor
     public enum Type {
         PLAY_SOUND(new SoundPathExtractor(), new SoundExecutor()),
-        SPOTIFY_PLAY_PLAYLIST(new pl.wieczorkep._switch.server.core.extractor.SpotifyPlaylistExtractor(), new pl.wieczorkep._switch.server.core.executor.SpotifyPlaylistExecutor());
+        SPOTIFY_PLAY_PLAYLIST(new SpotifyPlaylistExtractor(), new SpotifyPlaylistExecutor());
 
         @Getter
-        private ArgumentsExtractor argumentsExtractor;
-
+        private final ArgumentsExtractor argumentsExtractor;
         @Getter
-        private ActionExecutor actionExecutor;
+        private final ActionExecutor actionExecutor;
     }
 
     @RequiredArgsConstructor
@@ -97,11 +83,10 @@ public class Action implements Comparable<Action> {
         /**
          * @see java.util.Calendar
          */
-        @Getter
-        @NonNull
+        @Getter @NonNull
         private final DayOfWeek[] executionDays;
 
-        public ExecutionTime(int executionHour, int executionMinute, DayOfWeek[] executionDays) {
+        public ExecutionTime(int executionHour, int executionMinute, @NonNull DayOfWeek[] executionDays) {
             this((byte) executionHour, (byte) executionMinute, executionDays);
         }
 
@@ -122,10 +107,6 @@ public class Action implements Comparable<Action> {
         public DayOfWeek getClosestExecutionDay(final LocalDateTime now) {
             if (canExecuteToday(now)) {
                 return now.getDayOfWeek();
-            }
-
-            if (executionDays == null) {
-                return null;
             }
 
             DayOfWeek closestDay = null;
@@ -180,18 +161,21 @@ public class Action implements Comparable<Action> {
                 millisToNextExecution = ChronoUnit.MILLIS.between(now, nextExecution);
             }
 
-            return timeUnit.convert(millisToNextExecution,
-                    TimeUnit.MILLISECONDS);
+            return timeUnit.convert(millisToNextExecution, TimeUnit.MILLISECONDS);
         }
 
         @Override
         public int compareTo(@NotNull Action.ExecutionTime o) {
-            final long referenceValue = AppConfig.getReferenceTime();
+            final long referenceValue = getReferenceTime();
             long executionTime = referenceValue + getTime(TimeUnit.MILLISECONDS);
             long oExecutionTime = referenceValue + o.getTime(TimeUnit.MILLISECONDS);
 
             // todo: upewnic sie, ze to dziala
             return Long.compare(executionTime, oExecutionTime);
+        }
+
+        public static long getReferenceTime() {
+            return Instant.now().getEpochSecond();
         }
     }
 }

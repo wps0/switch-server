@@ -24,6 +24,7 @@ public class Constants {
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH = PREFIX_SPOTIFY + "client.refresh-token";
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN = PREFIX_SPOTIFY + "client.token";
     public static final String ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY = PREFIX_SPOTIFY + "client.token.validity";
+    public static final String ACTION_SPOTIFY_CLIENT_TOKEN_LAST_REFRESH = PREFIX_SPOTIFY + "client.token.last-refresh";
     public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmp-code";
     public static final String ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE = PREFIX_SPOTIFY + "client.default-device";
 

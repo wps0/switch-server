@@ -1,8 +1,9 @@
 package pl.wieczorkep._switch.server.core.concurrent;
 
 import lombok.extern.log4j.Log4j2;
-import pl.wieczorkep._switch.server.Server;
+import pl.wieczorkep._switch.server.SoundServer;
 import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.utils.ConcurrencyUtils;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -17,19 +18,19 @@ public class ActionSupervisorThread implements Runnable {
     private ScheduledExecutorService executorService;
     private ScheduledFuture<?> scheduledFuture;
     private ActionExecutorThread actionExecutorThread;
-    private Server server;
+    private SoundServer soundServer;
     private ReentrantLock lock;
 
-    public ActionSupervisorThread(Server server) {
+    public ActionSupervisorThread(SoundServer soundServer) {
         this.executorService = Executors.newSingleThreadScheduledExecutor();
-        this.server = server;
+        this.soundServer = soundServer;
         this.running = false;
         this.lock = new ReentrantLock();
     }
 
     @Override
     public void run() {
-        this.running = true;
+        running = true;
         loop();
     }
 
@@ -40,21 +41,22 @@ public class ActionSupervisorThread implements Runnable {
             LOGGER.debug(ConcurrencyUtils.prettifyThreadName(Thread.currentThread()) + " Waiting for the ActionChangeCondition...");
 
             try {
-                server.getConfig().awaitActionChange();
+                soundServer.getConfig().awaitActionChange();
 
                 scheduleAction();
             } catch (InterruptedException e) {
                 LOGGER.info("AwaitActionChange condition was interrupted");
+                LOGGER.debug(e);
             } catch (Exception e) {
                 LOGGER.error("Exception thrown!");
-                e.printStackTrace();
+                LOGGER.error(e);
 
                 try {
-                    ConcurrencyManager concurrencyManager = server.getConcurrencyManager();
+                    ConcurrencyManager concurrencyManager = soundServer.getConcurrencyManager();
                     concurrencyManager.getLock().lock();
                     concurrencyManager.getThreadErrorCondition().signalAll();
                 } finally {
-                    server.getConcurrencyManager().getLock().unlock();
+                    soundServer.getConcurrencyManager().getLock().unlock();
                 }
             }
         }
@@ -64,7 +66,7 @@ public class ActionSupervisorThread implements Runnable {
         // moze sie cos popsuc jesli w trakcie, gdy jeden watek sprobuje zaplanowac, drugi doda cos jako firstEntry,
         //  i trzeci sprobuje znowu zaplanowac(?)
         // ToDo: investigate
-        Optional<Action> topActionOptional = server.getConfig().getFirstAction();
+        Optional<Action> topActionOptional = soundServer.getConfig().getFirstAction();
         if (!topActionOptional.isPresent()) {
             return;
         }
@@ -84,11 +86,11 @@ public class ActionSupervisorThread implements Runnable {
                     // Knowing the new action is more appropriate, cancel the previous one.
                     cancelAction();
                     // Refresh the action's position in the AppConfig internal set.
-                    server.getConfig().refreshPosition(actionExecutorThread.getTargetAction());
+                    soundServer.getConfig().refreshPosition(actionExecutorThread.getTargetAction());
 
                     // The top action is the currently executed one
                     if (remainingTime < 0) {
-                        topAction = server.getConfig().getFirstAction().orElse(topAction);
+                        topAction = soundServer.getConfig().getFirstAction().orElse(topAction);
                     }
 
                     planAction(topAction);
@@ -115,10 +117,10 @@ public class ActionSupervisorThread implements Runnable {
 
     private void planAction(Action newAction) {
         LOGGER.debug("Planning " + newAction);
-        actionExecutorThread = new ActionExecutorThread(server.getConfig(), newAction);
+        actionExecutorThread = new ActionExecutorThread(soundServer.getConfig(), newAction);
         long s;
         scheduledFuture = executorService.schedule(actionExecutorThread, s = newAction.getExecutionTime().getTime(MILLISECONDS), MILLISECONDS);
-        LOGGER.debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
 
+        LOGGER.debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
     }
 }

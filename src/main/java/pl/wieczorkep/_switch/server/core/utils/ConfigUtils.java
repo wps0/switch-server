@@ -2,12 +2,12 @@ package pl.wieczorkep._switch.server.core.utils;
 
 import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
-import pl.wieczorkep._switch.server.Server;
+import pl.wieczorkep._switch.server.SoundServer;
 import pl.wieczorkep._switch.server.core.AppConfig;
-import pl.wieczorkep._switch.server.core.utils.factory.ActionFactory;
 
 import java.io.*;
 import java.nio.file.FileSystemException;
+import java.util.Properties;
 
 import static pl.wieczorkep._switch.server.Constants.*;
 import static pl.wieczorkep._switch.server.core.utils.ActionLoader.loadActions;
@@ -16,24 +16,22 @@ import static pl.wieczorkep._switch.server.core.utils.ActionLoader.loadActions;
 public final class ConfigUtils {
     private ConfigUtils() {}
 
-    public static void initializeConfig(Server server) throws FileSystemException {
+    public static void initializeConfig(SoundServer soundServer) throws FileSystemException {
         // init
-        File configRoot = new File(server.getConfig().get(CONFIG_DIR));
-        File songsDir = new File(server.getConfig().get(SONGS_DIR));
-        File actionsDir = new File(server.getConfig().get(ACTIONS_DIR));
+        File configRoot = new File(soundServer.getConfig().get(CONFIG_DIR));
+        File songsDir = new File(soundServer.getConfig().get(SONGS_DIR));
+        File actionsDir = new File(soundServer.getConfig().get(ACTIONS_DIR));
 
-        File configFile = new File(server.getConfig().get(CONFIG_FILE));
-        File actionsFile = new File(server.getConfig().get(ACTIONS_FILE));
+        File configFile = new File(soundServer.getConfig().get(CONFIG_FILE));
+        File actionsFile = new File(soundServer.getConfig().get(ACTIONS_FILE));
 
         boolean status = true;
 
         // dir presence checks
         if (!configRoot.exists())
             status = configRoot.mkdir();
-
         if (!songsDir.exists())
             status &= songsDir.mkdir();
-
         if (!actionsDir.exists())
             status &= actionsDir.mkdir();
 
@@ -43,19 +41,20 @@ public final class ConfigUtils {
             if (!configFile.exists()) {
                 status &= configFile.createNewFile();
 
-                @Cleanup BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
-                AppConfig.getDefaultProperties().store(configOutputStream, "The main config file.\nRefer to siema for siema");
+                @Cleanup
+                BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
+                getDefaultConfig().store(configOutputStream, "The main config file.\nRefer to siema for siema");
 
             } else {
-                loadConfig(server.getConfig());
+                loadConfig(soundServer.getConfig());
             }
             // END config file
 
             // BEGIN example actions file
-            File exampleActionsFile = new File(server.getConfig().get(ACTIONS_DIR) + File.separatorChar + "example.action.example");
+            File exampleActionsFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "example.action.example");
             if (!exampleActionsFile.exists()) {
                 ActionFactory actionFactory = new ActionFactory();
-                actionFactory.createActionFile(server.getConfig());
+                actionFactory.createActionFile(soundServer.getConfig());
             }
             // END example actions file
 
@@ -70,7 +69,7 @@ public final class ConfigUtils {
                 registerWriter.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
                 registerWriter.write("active=");
             } else {
-                loadActions(server.getConfig());
+                loadActions(soundServer.getConfig());
             }
             // END actions file
 
@@ -89,5 +88,29 @@ public final class ConfigUtils {
     public static void loadConfig(AppConfig appConfig) throws IOException {
         @Cleanup BufferedInputStream configInputStream = new BufferedInputStream(new FileInputStream(appConfig.get(CONFIG_FILE)));
         appConfig.getProps().load(configInputStream);
+    }
+
+    public static Properties getDefaultConfig() {
+        Properties defaultProperties = new Properties();
+        // --- Storage ---
+        defaultProperties.setProperty(CONFIG_DIR, System.getProperty("user.home") + File.separatorChar + "SwitchSoundServer");
+        defaultProperties.setProperty(SONGS_DIR, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "sounds");
+        defaultProperties.setProperty(ACTIONS_DIR, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "actions");
+
+        // -- Specific files --
+        defaultProperties.setProperty(CONFIG_FILE, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "config.props");
+        defaultProperties.setProperty(ACTIONS_FILE, defaultProperties.getProperty(ACTIONS_DIR) + File.separatorChar + "actions.props");
+
+        // --- Spotify properties ---
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
+        defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
+                "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
+                "playlist-read-private,app-remote-control");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
+        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE, "");
+        return defaultProperties;
     }
 }

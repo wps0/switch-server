@@ -1,7 +1,6 @@
 package pl.wieczorkep._switch.server.core;
 
-import lombok.Cleanup;
-import lombok.Getter;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,12 +8,13 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static pl.wieczorkep._switch.server.Constants.*;
+import static pl.wieczorkep._switch.server.Constants.CONFIG_FILE;
+import static pl.wieczorkep._switch.server.core.utils.ConfigUtils.getDefaultConfig;
+import static pl.wieczorkep._switch.server.core.utils.FileSystemUtils.setFilePermissions;
 
 @Log4j2
 public class AppConfig {
@@ -29,7 +29,6 @@ public class AppConfig {
     private Condition actionsChangeCondition;
 
 
-
     public AppConfig() {
         this.actions = new TreeSet<>();
         this.actionsLock = new ReentrantLock();
@@ -40,7 +39,7 @@ public class AppConfig {
      * Should always be called before using other methods
      */
     public void init() {
-        this.props = new Properties(getDefaultProperties());
+        this.props = new Properties(getDefaultConfig());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -51,9 +50,9 @@ public class AppConfig {
         return props.getProperty(key);
     }
 
-    private void put(String key, String value, boolean replace) {
-        if (props.get(key) != null && !replace) {
-            throw new IllegalStateException("config already contains " + key + " index");
+    private void put(@NonNull String key, String value, boolean replace) {
+        if (!replace && props.get(key) != null) {
+            throw new IllegalStateException("config already contains key " + key);
         }
         props.setProperty(key, value);
         try {
@@ -68,14 +67,13 @@ public class AppConfig {
     }
 
     /**
-     * Appends the value to default config file.
-     * Warning: if given key already exists, its value is replaced with given one.
+     * Appends the value to config file.
+     * Warning: if given key already exists, its value will be replaced with the new one.
      */
-    public void put(String key, String value) {
-        put(key, value, true);
+    public <T> void put(String key, T value) {
+        put(key, value.toString(), true);
     }
 
-    // TODO: wziąć to jakoś przepisać
     private void store() throws IOException {
         LOGGER.info("Saving config file...");
         String configFilePath = get(CONFIG_FILE);
@@ -86,16 +84,18 @@ public class AppConfig {
         }
 
         File newConfigFile = new File(configFilePath);
+        // revert old config if can't create the new one
         if (!newConfigFile.createNewFile()) {
+            // TODO: to miejsce trzeba mieć na uwadze, bo może się zdesyncować config na dysku z configiem w ramie
             originalConfig.renameTo(new File(configFilePath));
             throw new IOException("cannot create file " + get(CONFIG_FILE));
         }
-        @Cleanup
-        FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
+        // sets rw permissions only for file owner
+        setFilePermissions(newConfigFile);
+        // store updated config
+        @Cleanup FileOutputStream configOutputStream = new FileOutputStream(newConfigFile);
         props.store(configOutputStream, "Auto saved config");
-
-        // TODO: SECURITY: jakaś lepsza serializacja configu. Można w tym miejscu usunąć dowolny plik kończący się na
-        //  .tmp z permisjami usera wykonującego aplikajcę (???)
+        // delete tmp (old) config
         Files.delete(Path.of(new File(configFilePath + ".tmp").toURI()));
     }
 
@@ -114,6 +114,7 @@ public class AppConfig {
         }
     }
 
+    // TODO: zoptymalizować
     public void refreshPosition(Action action) {
         actionsLock.lock();
         try {
@@ -133,32 +134,42 @@ public class AppConfig {
         }
     }
 
-    public void putAction(Action action) {
-        addAction(action);
-        LOGGER.info("Loaded 1 action.");
-    }
-
-    private void addAction(Action action) {
+    public boolean putAction(Action action) {
         actionsLock.lock();
+        boolean status = false;
         try {
-            actions.add(action);
-
-            // signal the action change
+            status = actions.add(action);
+            // signal action change
             actionsChangeCondition.signalAll();
         } finally {
             actionsLock.unlock();
+
+            if (status) {
+                LOGGER.info("Loaded 1 action");
+            } else {
+                LOGGER.error("Failed to load 1 action!");
+            }
         }
+        return status;
     }
 
-    public void putActions(Set<? extends Action> actionMap) {
+    public boolean putActions(Set<? extends Action> actionMap) {
         actionsLock.lock();
+        boolean status = false;
         try {
-            actions.addAll(actionMap);
+            status = actions.addAll(actionMap);
+            // signal action change
             actionsChangeCondition.signalAll();
         } finally {
             actionsLock.unlock();
+            if (status) {
+                LOGGER.info("Loaded " + actionMap.size() + " actions");
+            } else {
+                LOGGER.error("Failed to load " + actionMap.size() + " actions!");
+            }
         }
-        LOGGER.info("Loaded " + actionMap.size() + " actions");
+
+        return status;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -180,36 +191,5 @@ public class AppConfig {
         } finally {
             actionsLock.unlock();
         }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Static methods
-    ///////////////////////////////////////////////////////////////////////////
-    public static Properties getDefaultProperties() {
-        Properties defaultProperties = new Properties();
-        // --- Storage ---
-        defaultProperties.setProperty(CONFIG_DIR, System.getProperty("user.home") + File.separatorChar + "SwitchSoundServer");
-        defaultProperties.setProperty(SONGS_DIR, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "sounds");
-        defaultProperties.setProperty(ACTIONS_DIR, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "actions");
-
-        // -- Specific files --
-        defaultProperties.setProperty(CONFIG_FILE, defaultProperties.getProperty(CONFIG_DIR) + File.separatorChar + "config.props");
-        defaultProperties.setProperty(ACTIONS_FILE, defaultProperties.getProperty(ACTIONS_DIR) + File.separatorChar + "actions.props");
-
-        // --- Spotify properties ---
-        defaultProperties.setProperty(ACTION_SPOTIFY_APPID, "64f78c9a8a51413a86364dd9970dabb6");
-        defaultProperties.setProperty(ACTION_SPOTIFY_APPSECRET, "");
-        defaultProperties.setProperty(ACTION_SPOTIFY_AUTHSCOPES, "user-read-playback-state,user-modify-playback-state," +
-                "playlist-read-collaborative,user-read-playback-position,user-read-currently-playing," +
-                "playlist-read-private,app-remote-control");
-        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN, "");
-        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, "");
-        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
-        defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE, "");
-        return defaultProperties;
-    }
-
-    public static long getReferenceTime() {
-        return Instant.now().getEpochSecond();
     }
 }

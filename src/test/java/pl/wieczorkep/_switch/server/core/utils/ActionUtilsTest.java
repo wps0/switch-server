@@ -3,7 +3,6 @@ package pl.wieczorkep._switch.server.core.utils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import pl.wieczorkep._switch.server.core.utils.factory.ExceptionFactory;
 
 import java.time.DayOfWeek;
 import java.time.format.DateTimeParseException;

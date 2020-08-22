@@ -3,6 +3,7 @@ package pl.wieczorkep._switch.server.core.utils.factory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import pl.wieczorkep._switch.server.core.Action;
+import pl.wieczorkep._switch.server.core.utils.ActionFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +40,10 @@ class ActionFactoryTest {
     void createActionFile_fromActionAndFile_shouldThrowIOException(@TempDir File container) {
         // given
         Action exampleAction = new Action(
-                new Action.ExecutionTime((byte) 10, (byte) 20, new DayOfWeek[]{DayOfWeek.TUESDAY}),
+                "testExampleAction.action",
+        new Action.ExecutionTime(10, 20, new DayOfWeek[]{DayOfWeek.TUESDAY}),
                 Action.Type.PLAY_SOUND,
-                null,
-                "testExampleAction.action"
+                null
         );
         File actionsDir = new File(container, "actionsDir");
         System.out.println(actionsDir.mkdir());
@@ -62,10 +63,10 @@ class ActionFactoryTest {
     void createActionFile_fromActionAndFile_shouldCreateFileFromGivenAction(@TempDir File container) throws IOException {
         // given
         Action exampleAction = new Action(
+                "testExampleAction.action",
                 new Action.ExecutionTime((byte) 10, (byte) 20, new DayOfWeek[]{DayOfWeek.TUESDAY}),
                 Action.Type.PLAY_SOUND,
-                null,
-                "testExampleAction.action"
+                null
         );
 
         // when

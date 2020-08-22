@@ -1,9 +1,8 @@
-package pl.wieczorkep._switch.server.core.utils.factory;
+package pl.wieczorkep._switch.server.core.utils;
 
 import lombok.NonNull;
 import pl.wieczorkep._switch.server.core.Action;
 import pl.wieczorkep._switch.server.core.AppConfig;
-import pl.wieczorkep._switch.server.core.utils.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +14,8 @@ import static pl.wieczorkep._switch.server.Constants.ACTIONS_DIR;
 public class ActionFactory {
     public static Action createExampleAction() {
         return new Action(
-                (byte) 8,
-                (byte) 45,
+                8,
+                45,
                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.SATURDAY},
                 Action.Type.PLAY_SOUND,
                 "/path/to/the/file.wav",

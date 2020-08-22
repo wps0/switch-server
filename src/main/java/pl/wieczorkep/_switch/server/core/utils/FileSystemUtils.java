@@ -24,7 +24,8 @@ public final class FileSystemUtils {
             throw new IOException("Unable to create example actions file.");
         }
 
-        @Cleanup FileWriter actionWriter = new FileWriter(actionFile);
+        @Cleanup
+        FileWriter actionWriter = new FileWriter(actionFile);
 
         actionWriter.write("# This is an example actions file\n");
         actionWriter.write("# Each comment line starts with the '#' char\n");
@@ -50,6 +51,28 @@ public final class FileSystemUtils {
         actionWriter.write("#type=" + fromAction.getType().name() + "\n"); // ToDo: test if this works correctly
         actionWriter.write("#typeArguments=" + fromAction.getRawArguments() + "\n");
 
+        // set safe permissions
+        setFilePermissions(actionFile);
         return Optional.of(actionFile);
+    }
+
+    /**
+     * Sets safe file permissions (-rw-------). Note that file for which the permissions should be set
+     *  must exist beforehand.
+     *
+     * @param target File which has to have the permissions changed.
+     * @return True, if all the operations succeeded, false otherwise.
+     * @throws FileNotFoundException When specified file does not exist.
+     */
+    public static boolean setFilePermissions(@NonNull File target) throws FileNotFoundException {
+        if (!target.exists()) {
+            throw new FileNotFoundException(target.getAbsolutePath() + " does not exists");
+        }
+        boolean status = target.setReadable(false, false);
+        status &= target.setWritable(false, false);
+        status &= target.setExecutable(false, false);
+        status &= target.setReadable(true, true);
+        status &= target.setWritable(true, true);
+        return status;
     }
 }

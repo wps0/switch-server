@@ -9,8 +9,7 @@ import pl.wieczorkep._switch.server.core.AppConfig;
 @Log4j2
 public class ActionExecutorThread extends Thread {
     private final AppConfig appConfig;
-    @Getter
-    @NonNull
+    @Getter @NonNull
     private Action targetAction;
     @Getter
     private boolean successful;

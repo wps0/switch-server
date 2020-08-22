@@ -4,11 +4,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.jdi.request.InvalidRequestStateException;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import pl.wieczorkep._switch.server.Server;
+import pl.wieczorkep._switch.server.SoundServer;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.*;
 import java.time.Instant;
@@ -34,14 +34,16 @@ public class SpotifyApiGateway {
             .version(HttpClient.Version.HTTP_2)
             .build();
 
-    private Server server;
+    private final SoundServer server;
     private String authToken;
     private String refreshToken;
+    @Getter @Setter
     private int validity;
+    @Getter @Setter
     private long lastRefresh;
 
-    public SpotifyApiGateway(Server server, String appClientId, String appClientSecret, String appScopes, String appCallbackUrl) {
-        this.server = server;
+    public SpotifyApiGateway(SoundServer soundServer, String appClientId, String appClientSecret, String appScopes, String appCallbackUrl) {
+        this.server = soundServer;
         this.appClientId = appClientId;
         this.appClientSecret = appClientSecret;
         this.appScopes = appScopes.replace(",", "%20");
@@ -146,10 +148,12 @@ public class SpotifyApiGateway {
         HttpResponse<String> response = null;
         try {
             response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+            if (response == null) {
+                throw new NullPointerException("response cannot be null");
+            }
+        } catch (Exception e) {
             LOGGER.error("Failed to make Spotify API refresh request", e);
         }
-
         LOGGER.debug(String.format("Spotify API request returned code %d (response: %s)", response.statusCode(), response.body()));
 
         return response;
@@ -157,7 +161,8 @@ public class SpotifyApiGateway {
 
     protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
-        HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH), "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
+        HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH),
+                "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
 
         // TODO: zweryfikować, czy jakieś inne kody też są poprawne (np. redirect) i jak je obsłużyć
         if (refreshResponse.statusCode() != 200) {
@@ -175,10 +180,14 @@ public class SpotifyApiGateway {
         if (grantType == GrantType.AUTH_CODE) {
             setRefreshToken(responseJson.get("refresh_token").getAsString());
         }
+        // from the api we get validity in seconds
         this.validity = responseJson.get("expires_in").getAsInt();
         this.lastRefresh = Instant.now().getEpochSecond();
+        // update config
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_LAST_REFRESH, lastRefresh);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY, validity);
 
-        LOGGER.info(format("Access code to auth token successfully exchanged! Validity: %d.", validity));
+        LOGGER.info(format("Access code to auth token successfully exchanged! Validity: %d seconds.", validity));
     }
 
     private void setAuthToken(final String newToken) {
@@ -218,7 +227,6 @@ public class SpotifyApiGateway {
             }
         },
         BEARER(true) {
-
             @Override
             public String authString() {
                 return "Bearer " + appAuthToken;
@@ -228,7 +236,6 @@ public class SpotifyApiGateway {
         private static String appClientId;
         private static String appClientSecret;
         private static String appAuthToken;
-
         @Getter
         private final boolean authTokenRequired;
 
@@ -237,7 +244,7 @@ public class SpotifyApiGateway {
         }
 
         /**
-         * Has to be called before calling any authString methods and refreshed periodically
+         * Has to be called before calling any authString methods and has to be refreshed periodically
          */
         public static void set(@NotNull String appClientId, @NotNull String appClientSecret, @NotNull String appAuthToken) {
             AuthMethod.appClientId = appClientId;

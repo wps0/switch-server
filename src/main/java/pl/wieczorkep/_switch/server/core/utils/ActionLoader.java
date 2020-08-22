@@ -40,6 +40,7 @@ public class ActionLoader {
 
     @SneakyThrows
     public static Action loadAction(File actionFile) {
+        @Cleanup
         FileReader reader = new FileReader(actionFile);
         StringBuilder fileStringBuilder = new StringBuilder();
 
@@ -54,8 +55,8 @@ public class ActionLoader {
 
         try {
             return new Action(
-                    Byte.parseByte(actionProperties.getProperty("hour", "0")),
-                    Byte.parseByte(actionProperties.getProperty("minute", "0")),
+                    Integer.parseInt(actionProperties.getProperty("hour", "0")),
+                    Integer.parseInt(actionProperties.getProperty("minute", "0")),
                     Stream.of(actionProperties
                             .getProperty("days", "")
                             .replace('{', ' ')
@@ -75,5 +76,4 @@ public class ActionLoader {
         }
         return null;
     }
-
 }

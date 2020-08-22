@@ -14,10 +14,10 @@ import static pl.wieczorkep._switch.server.Constants.*;
 
 @RequiredArgsConstructor
 @Log4j2
-public class Server {
-    @Getter
+public class SoundServer {
+    @Getter @NonNull
     private final AppConfig config;
-    @Getter
+    @Getter @NonNull
     private final ConcurrencyManager concurrencyManager;
     @Getter
     private SpotifyApiGateway spotifyApiGateway;
@@ -30,15 +30,26 @@ public class Server {
 
     public void run() {
         LOGGER.info(SpotifyMacros.Player.startPlayback(spotifyApiGateway, "85a04d078a7a84537c9a1bfa6b3866431fd9deb3", "", 0, 0));
-
         concurrencyManager.init(this);
     }
 
     private void initConfig() throws FileSystemException {
         config.init();
         ConfigUtils.initializeConfig(this);
+
+        // parse spotify status variables
+        String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);
+        if (validity != null && !validity.isEmpty()) {
+            spotifyApiGateway.setValidity(Integer.parseInt(validity));
+        }
+        String lastRefresh = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_LAST_REFRESH);
+        if (lastRefresh != null && !lastRefresh.isEmpty()) {
+            spotifyApiGateway.setValidity(Integer.parseInt(lastRefresh));
+        }
     }
+
     private void initSpotifyIntegration() {
+        // TODO: add www server for token obtaining purposes
         spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
                 config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
                 "http://localhost/");
