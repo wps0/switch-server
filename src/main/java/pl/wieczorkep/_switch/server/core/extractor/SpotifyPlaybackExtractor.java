@@ -5,7 +5,7 @@ import java.io.StringReader;
 import java.util.Optional;
 import java.util.Properties;
 
-public class SpotifyPlaylistExtractor implements ArgumentsExtractor {
+public class SpotifyPlaybackExtractor implements ArgumentsExtractor {
 
     @Override
     public Optional<Properties> extract(final String inputString) {

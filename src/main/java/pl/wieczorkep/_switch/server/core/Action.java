@@ -43,7 +43,7 @@ public class Action implements Comparable<Action> {
     @NonNull
     public Properties getArguments() {
         if (arguments == null) {
-            arguments = type.getArgumentsExtractor().extract(typeArguments)
+            arguments = type.getArgumentsExtractor().extract(typeArguments) // TODO: spotify action handling
                     .orElse(new Properties());
         }
         return arguments;
@@ -64,7 +64,7 @@ public class Action implements Comparable<Action> {
     @AllArgsConstructor
     public enum Type {
         PLAY_SOUND(new SoundPathExtractor(), new SoundExecutor()),
-        SPOTIFY_PLAY_PLAYLIST(new SpotifyPlaylistExtractor(), new SpotifyPlaylistExecutor());
+        SPOTIFY_PLAY(new SpotifyPlaybackExtractor(), new SpotifyPlaybackExecutor());
 
         @Getter
         private final ArgumentsExtractor argumentsExtractor;

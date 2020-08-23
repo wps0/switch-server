@@ -11,6 +11,39 @@ import java.util.Optional;
 public final class FileSystemUtils {
     private FileSystemUtils() {}
 
+
+    public static Optional<File> createSpotifyActionFile(@NonNull Action fromAction, @NonNull File actionsDir) throws IOException {
+        Optional<File> fileOptional = createActionFile(fromAction, actionsDir);
+        File actionFile = fileOptional.orElseThrow();
+        // Append to created actions config file spotify action specific parameters
+        @Cleanup FileWriter writer = new FileWriter(actionFile, true);
+        writer.append("#\n");
+        writer.append("# Spotify action specific\n");
+        writer.append("# Duration of the playback (in minutes)\n");
+        writer.append("#duration=5\n");
+
+        writer.append("#\n");
+        writer.append("# Spotify action specific\n");
+        writer.append("# Device id on which the action will be performed. If not supplied, the user’s currently\n");
+        writer.append("#  active device is the target. Something like:\n");
+        writer.append("#deviceId=t6f1yiBu3hjn2k\n");
+
+        writer.append("#\n");
+        writer.append("# Spotify action specific\n");
+        writer.append("# Spotify URI of the context to play. Valid contexts are albums, artists, playlists.\n");
+        writer.append("#  If not supplied, playback will start from recently stopped place.\n");
+        writer.append("#contextUri=spotify:album:1Je1IMUlBXcx1Fz0WE7oPT\n");
+
+        writer.append("#\n");
+        writer.append("# Spotify action specific\n");
+        writer.append("# Indicates from where in the context playback should start. Only available when context_uri\n");
+        writer.append("#  corresponds to an album or playlist object.\n");
+        writer.append("# Default: 0 (start from the beginning of a playlist).\n");
+        writer.append("#offset=0\n");
+
+        return fileOptional;
+    }
+
     /**
      * @param fromAction The action for which the file should be created.
      * @param actionsDir The directory where actions are stored.
@@ -27,28 +60,28 @@ public final class FileSystemUtils {
         @Cleanup
         FileWriter actionWriter = new FileWriter(actionFile);
 
-        actionWriter.write("# This is an example actions file\n");
-        actionWriter.write("# Each comment line starts with the '#' char\n");
+        actionWriter.write("# This is an example action file\n");
+        actionWriter.write("# Each comment line starts with the '#' character\n");
         actionWriter.write("#\n");
 
-        actionWriter.write("# Run your task at " + fromAction.getExecutionTime().getExecutionHour() + "\n");
-        actionWriter.write("# Acceptable values: 0-23\n");
+        actionWriter.write("# Run the task at " + fromAction.getExecutionTime().getExecutionHour() + "\n");
+        actionWriter.write("# Possible values: <0, 23>\n");
         actionWriter.write("#hour=" + fromAction.getExecutionTime().getExecutionHour() + "\n");
 
         actionWriter.write("#\n");
-        actionWriter.write("# Run your task at the specific minute\n");
-        actionWriter.write("# Acceptable values: 0-59\n");
+        actionWriter.write("# Run the at the specified minute\n");
+        actionWriter.write("# Possible values: <0, 59>\n");
         actionWriter.write("#minute=" + fromAction.getExecutionTime().getExecutionMinute() + "\n");
 
         actionWriter.write("#\n");
-        actionWriter.write("# Run your task at the specified days\n");
-        actionWriter.write("# Acceptable values: {M, TU, W, TH, F, SA, SU}\n");
+        actionWriter.write("# Run your task on the specified days\n");
+        actionWriter.write("# Possible values: {M, TU, W, TH, F, SA, SU}\n");
         actionWriter.write("#days=" + ActionUtils.encodeDays(fromAction.getExecutionTime().getExecutionDays()) + "\n");
 
         actionWriter.write("#\n");
         actionWriter.write("# Type of the action\n");
-        actionWriter.write("# Acceptable values: " + Arrays.toString(Action.Type.values()).replace('[', '{').replace(']', '}') + "\n");
-        actionWriter.write("#type=" + fromAction.getType().name() + "\n"); // ToDo: test if this works correctly
+        actionWriter.write("# Possible values: " + Arrays.toString(Action.Type.values()).replace('[', '{').replace(']', '}') + "\n");
+        actionWriter.write("#type=" + fromAction.getType().name() + "\n");
         actionWriter.write("#typeArguments=" + fromAction.getRawArguments() + "\n");
 
         // set safe permissions

@@ -36,8 +36,15 @@ public class SoundServer {
     private void initConfig() throws FileSystemException {
         config.init();
         ConfigUtils.initializeConfig(this);
+    }
 
-        // parse spotify status variables
+    private void initSpotifyIntegration() {
+        // TODO: add www server for token obtaining purposes
+        spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
+                config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
+                "http://localhost/");
+
+        // init spotify status variables
         String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);
         if (validity != null && !validity.isEmpty()) {
             spotifyApiGateway.setValidity(Integer.parseInt(validity));
@@ -46,13 +53,6 @@ public class SoundServer {
         if (lastRefresh != null && !lastRefresh.isEmpty()) {
             spotifyApiGateway.setValidity(Integer.parseInt(lastRefresh));
         }
-    }
-
-    private void initSpotifyIntegration() {
-        // TODO: add www server for token obtaining purposes
-        spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
-                config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
-                "http://localhost/");
 
         LOGGER.info(spotifyApiGateway.getAuthUrl());
         spotifyApiGateway.setClientCredentials(config.get(ACTION_SPOTIFY_CLIENT_TOKEN), config.get(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));

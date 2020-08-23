@@ -9,6 +9,7 @@ import pl.wieczorkep._switch.server.integration.spotify.model.Devices;
 import java.net.URI;
 import java.net.http.HttpResponse;
 
+import static pl.wieczorkep._switch.server.Constants.SPOTIFY_API_ENDPOINT;
 import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.AuthMethod.BEARER;
 import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.RequestMethod.*;
 
@@ -18,8 +19,11 @@ public class SpotifyMacros {
 
     private SpotifyMacros() {}
 
+    /**
+     * Player endpoint.
+     */
     public static class Player {
-        public static final String API_PREFIX = SpotifyApiGateway.API_ENDPOINT + "/me/player";
+        public static final String API_PREFIX = SPOTIFY_API_ENDPOINT + "/me/player";
 
         private Player() {}
 
@@ -53,6 +57,7 @@ public class SpotifyMacros {
          *                   currently active device is the target.
          * @return True if the status code is equals to 204, false otherwise.
          */
+        // TODO: może gdy nie będzie się dało spauzować playbacku to volume do 0 zmniejsz
         public static boolean pausePlayback(SpotifyApiGateway apiGateway, String deviceId) {
             HttpResponse<String> response = apiGateway.makeRequest(URI.create(API_PREFIX + "/pause"), deviceId, "", PUT, BEARER);
             return response.statusCode() == 204;
@@ -164,26 +169,4 @@ public class SpotifyMacros {
         json.append('}');
         return json.toString();
     }
-//    private static String encode(String... arguments) {
-//        if ((arguments.length & 1) == 1) {
-//            throw new IllegalArgumentException("amount of arguments has to be even");
-//        }
-//
-//        StringBuilder json = new StringBuilder();
-//        json.append('{');
-//        for (int i = 0; i < arguments.length; i++) {
-//            if ((i & 1) == 0) {
-//                if (arguments[i].isBlank()) {
-//                    i++;
-//                    continue;
-//                }
-//                json.append("\"").append(arguments[i]).append("\":");
-//            } else {
-//                json.append(arguments[i]).append(",");
-//            }
-//        }
-//        json.deleteCharAt(json.length() - 1);
-//        json.append('}');
-//        return json.toString();
-//    }
 }

@@ -3,7 +3,7 @@ package pl.wieczorkep._switch.server;
 public class Constants {
     private Constants() {}
 
-    // ==!== Config variables ==!==
+
     // --- Prefixes ---
     public static final String PREFIX_ACTION = "actions.";
     public static final String PREFIX_FILESYSTEM = "fs.";
@@ -28,4 +28,9 @@ public class Constants {
     public static final String ACTION_SPOTIFY_CLIENT_TMPCODE = PREFIX_SPOTIFY + "client.tmp-code";
     public static final String ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE = PREFIX_SPOTIFY + "client.default-device";
 
+    // --- Spotify integration ---
+    public static final String SPOTIFY_AUTH_ENDPOINT = "https://accounts.spotify.com";
+    public static final String SPOTIFY_API_ENDPOINT = "https://api.spotify.com/v1";
+    public static final String SPOTIFY_AUTH_ENDPOINT_AUTHORIZE = SPOTIFY_AUTH_ENDPOINT + "/authorize";
+    public static final String SPOTIFY_AUTH_ENDPOINT_REFRESH = SPOTIFY_AUTH_ENDPOINT + "/api/token";
 }

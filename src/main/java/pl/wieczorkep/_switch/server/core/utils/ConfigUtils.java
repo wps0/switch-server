@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import static pl.wieczorkep._switch.server.Constants.*;
 import static pl.wieczorkep._switch.server.core.utils.ActionLoader.loadActions;
+import static pl.wieczorkep._switch.server.core.utils.FileSystemUtils.createSpotifyActionFile;
 
 @Log4j2
 public final class ConfigUtils {
@@ -51,11 +52,15 @@ public final class ConfigUtils {
             // END config file
 
             // BEGIN example actions file
-            File exampleActionsFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "example.action.example");
+            File exampleActionsFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "action.example");
             if (!exampleActionsFile.exists()) {
                 ActionFactory actionFactory = new ActionFactory();
                 actionFactory.createActionFile(soundServer.getConfig());
             }
+            File exampleSpotifyActionFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "spotify-action.example");
+            if (!exampleSpotifyActionFile.exists()) {
+                createSpotifyActionFile(ActionFactory.createExampleSpotifyAction(), new File(soundServer.getConfig().get(ACTIONS_DIR)));
+                }
             // END example actions file
 
             // BEGIN actions file

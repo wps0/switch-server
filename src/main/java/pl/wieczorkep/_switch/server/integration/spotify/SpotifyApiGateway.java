@@ -20,20 +20,10 @@ import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway
 
 @Log4j2
 public class SpotifyApiGateway {
-    public static final String AUTH_ENDPOINT = "https://accounts.spotify.com";
-    public static final String API_ENDPOINT = "https://api.spotify.com/v1";
-    public static final String AUTH_ENDPOINT_AUTHORIZE = AUTH_ENDPOINT + "/authorize";
-    public static final String AUTH_ENDPOINT_REFRESH = AUTH_ENDPOINT + "/api/token";
-
     private final String appClientId;
     private final String appClientSecret;
     private final String appScopes;
     private final String appCallbackUrl;
-
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .build();
-
     private final SoundServer server;
     private String authToken;
     private String refreshToken;
@@ -41,6 +31,9 @@ public class SpotifyApiGateway {
     private int validity;
     @Getter @Setter
     private long lastRefresh;
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .build();
 
     public SpotifyApiGateway(SoundServer soundServer, String appClientId, String appClientSecret, String appScopes, String appCallbackUrl) {
         this.server = soundServer;
@@ -76,7 +69,7 @@ public class SpotifyApiGateway {
      * @return Spotify API url used by user to gain auth code
      */
     public String getAuthUrl() {
-        return AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
+        return SPOTIFY_AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
                 .concat("&response_type=code")
                 .concat("&redirect_uri=").concat(appCallbackUrl)
                 .concat("&scope=").concat(appScopes);
@@ -161,7 +154,7 @@ public class SpotifyApiGateway {
 
     protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
-        HttpResponse<String> refreshResponse = makeRequest(URI.create(AUTH_ENDPOINT_REFRESH),
+        HttpResponse<String> refreshResponse = makeRequest(URI.create(SPOTIFY_AUTH_ENDPOINT_REFRESH),
                 "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
 
         // TODO: zweryfikować, czy jakieś inne kody też są poprawne (np. redirect) i jak je obsłużyć

@@ -6,11 +6,11 @@ import java.util.Properties;
 @FunctionalInterface
 public interface ArgumentsExtractor {
     /**
-     * Extracts the arguments specific to the {@link pl.wieczorkep._switch.server.core.Action.Type}
+     * Extracts the arguments specific to the {@link pl.wieczorkep._switch.server.core.Action.Type Type}
      * <br />
      *
      * @param inputString Config parameters' string.
-     * @return the {@link Properties} object containing the extraction result.
+     * @return {@link Properties} object containing the extraction result.
      */
     public Optional<Properties> extract(String inputString);
 }

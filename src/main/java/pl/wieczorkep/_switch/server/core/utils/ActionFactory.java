@@ -12,6 +12,17 @@ import java.util.Optional;
 import static pl.wieczorkep._switch.server.Constants.ACTIONS_DIR;
 
 public class ActionFactory {
+    public static Action createExampleSpotifyAction() {
+        return new Action(
+                7,
+                45,
+                new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.SATURDAY},
+                Action.Type.SPOTIFY_PLAY,
+                "/path/to/the/file.wav",
+                "spotify-action.example"
+        );
+    }
+
     public static Action createExampleAction() {
         return new Action(
                 8,
@@ -19,7 +30,7 @@ public class ActionFactory {
                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.SATURDAY},
                 Action.Type.PLAY_SOUND,
                 "/path/to/the/file.wav",
-                "example.action.example"
+                "action.example"
         );
     }
 
