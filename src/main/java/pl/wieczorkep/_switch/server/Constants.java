@@ -29,8 +29,19 @@ public class Constants {
     public static final String ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE = PREFIX_SPOTIFY + "client.default-device";
 
     // --- Spotify integration ---
-    public static final String SPOTIFY_AUTH_ENDPOINT = "https://accounts.spotify.com";
-    public static final String SPOTIFY_API_ENDPOINT = "https://api.spotify.com/v1";
-    public static final String SPOTIFY_AUTH_ENDPOINT_AUTHORIZE = SPOTIFY_AUTH_ENDPOINT + "/authorize";
-    public static final String SPOTIFY_AUTH_ENDPOINT_REFRESH = SPOTIFY_AUTH_ENDPOINT + "/api/token";
+    public static final String CONST_SPOTIFY_AUTH_ENDPOINT = "https://accounts.spotify.com";
+    public static final String CONST_SPOTIFY_API_ENDPOINT = "https://api.spotify.com/v1";
+    public static final String CONST_SPOTIFY_AUTH_ENDPOINT_AUTHORIZE = CONST_SPOTIFY_AUTH_ENDPOINT + "/authorize";
+    public static final String CONST_SPOTIFY_AUTH_ENDPOINT_REFRESH = CONST_SPOTIFY_AUTH_ENDPOINT + "/api/token";
+    public static final String CONST_SPOTIFY_HTTPS_ALGORITHM_DEFAULT = "TLSv1.2";
+    public static final String CONST_SPOTIFY_HTTPS_SECURE_RANDOM_ALGORITHM = "PKCS11";
+    public static final String CONST_SPOTIFY_HTTPS_TRUST_MANAGER_ALGORITHM = "PKIX";
+    public static final String CONST_SPOTIFY_HTTPS_KEY_MANAGER_ALGORITHM = "PKIX";
+    public static final String CONST_SPOTIFY_HTTPS_ROOT_PATH = "/callback";
+    /** Free port as of 24.08.2020 */
+    public static final String SPOTIFY_HTTPS_PORT = PREFIX_SPOTIFY + "https-server.port";
+    public static final String SPOTIFY_HTTPS_IP = PREFIX_SPOTIFY + "https-server.ip";
+    public static final String SPOTIFY_HTTPS_HOSTNAME = PREFIX_SPOTIFY + "https-server.hostname";
+    public static final String SPOTIFY_HTTPS_BACKLOG = PREFIX_SPOTIFY + "https-server.waiting-queue-size";
+    public static final String SPOTIFY_HTTPS_ALGORITHM = PREFIX_SPOTIFY + "https-server.encryption-algorithm";
 }

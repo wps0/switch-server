@@ -3,12 +3,15 @@ package pl.wieczorkep._switch.server.integration.spotify;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.jdi.request.InvalidRequestStateException;
+import com.sun.net.httpserver.HttpServer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SoundServer;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.*;
 import java.time.Instant;
@@ -25,6 +28,7 @@ public class SpotifyApiGateway {
     private final String appScopes;
     private final String appCallbackUrl;
     private final SoundServer server;
+    private HttpServer httpsServer;
     private String authToken;
     private String refreshToken;
     @Getter @Setter
@@ -69,9 +73,17 @@ public class SpotifyApiGateway {
      * @return Spotify API url used by user to gain auth code
      */
     public String getAuthUrl() {
-        return SPOTIFY_AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
+        // init http server to save user's time
+        if (httpsServer == null) {
+            startHttpsServer();
+        }
+        return getAuthUrl(appCallbackUrl);
+    }
+
+    private String getAuthUrl(String callbackUrl) {
+        return CONST_SPOTIFY_AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
                 .concat("&response_type=code")
-                .concat("&redirect_uri=").concat(appCallbackUrl)
+                .concat("&redirect_uri=").concat(callbackUrl)
                 .concat("&scope=").concat(appScopes);
     }
 
@@ -154,7 +166,7 @@ public class SpotifyApiGateway {
 
     protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
-        HttpResponse<String> refreshResponse = makeRequest(URI.create(SPOTIFY_AUTH_ENDPOINT_REFRESH),
+        HttpResponse<String> refreshResponse = makeRequest(URI.create(CONST_SPOTIFY_AUTH_ENDPOINT_REFRESH),
                 "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
 
         // TODO: zweryfikować, czy jakieś inne kody też są poprawne (np. redirect) i jak je obsłużyć
@@ -191,6 +203,67 @@ public class SpotifyApiGateway {
     private void setRefreshToken(final String newToken) {
         this.refreshToken = newToken;
         server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, newToken);
+    }
+
+    private boolean startHttpsServer() {
+        if (httpsServer != null) {
+            throw new IllegalStateException("https server is not null (was previously started)");
+        }
+        try {
+            httpsServer = HttpServer.create();
+        } catch (IOException e) {
+            LOGGER.info("Failed to create temporary http server! The process of obtaining an access token won't be automatic.");
+            LOGGER.info(e);
+            return false;
+        }
+
+        int port = Integer.parseInt(server.getConfig().get(SPOTIFY_HTTPS_PORT));
+        int backlog = Integer.parseInt(server.getConfig().getOrDefault(SPOTIFY_HTTPS_BACKLOG, "0"));
+        String ip = server.getConfig().get(SPOTIFY_HTTPS_IP);
+        String hostname = server.getConfig().get(SPOTIFY_HTTPS_HOSTNAME);
+        InetSocketAddress inetSAddr = new InetSocketAddress(ip, port);
+
+        // TODO: moze jakies one-time password?
+
+        // queue only up to 10 incoming tcp connection if server is busy processing requests, other will probably
+        //  be ignored
+        try {
+            httpsServer.bind(inetSAddr, backlog);
+        } catch (IOException e) {
+            LOGGER.info("Failed to bind temporary http server to address " + ip + ":" + port);
+            LOGGER.debug(e);
+            return false;
+        }
+
+        // configure ssl
+        /*try {
+            String algo = server.getConfig().getOrDefault(SPOTIFY_HTTPS_ALGORITHM, CONST_SPOTIFY_HTTPS_ALGORITHM_DEFAULT);
+            SSLContext sslContext = SSLContext.getInstance(algo);
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(CONST_SPOTIFY_HTTPS_KEY_MANAGER_ALGORITHM);
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(CONST_SPOTIFY_HTTPS_TRUST_MANAGER_ALGORITHM);
+            SecureRandom sr = SecureRandom.getInstance(CONST_SPOTIFY_HTTPS_SECURE_RANDOM_ALGORITHM);
+
+            // TODO: init the factories
+
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), sr);
+
+//            HttpsConfigurator httpsConf = new HttpsConfigurator(sslContext);
+//            httpsConf.configure(HttpsParameters);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            LOGGER.info("Failed to find encryption algorithm specified in config and/or the default algorithm");
+            LOGGER.info(e);
+            return false;
+        }*/
+//        HttpsConfigurator httpsConf = new HttpsConfigurator()
+
+        // STOPSHIP: 24.08.2020 Dokończyć pisanie tego http handlera, moze zrobić mu plik osobny. Może przerzucić cały ten serwer do pliku osobnego (useless chyba/>?) 
+        httpsServer.createContext(CONST_SPOTIFY_HTTPS_ROOT_PATH, new CallbackHttpHandler(hostname));
+
+        LOGGER.info("Starting temporary http(s) server at " + httpsServer.getAddress());
+        httpsServer.start();
+
+        return true;
     }
 
     enum GrantType {

@@ -42,7 +42,7 @@ public class SoundServer {
         // TODO: add www server for token obtaining purposes
         spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
                 config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
-                "http://localhost/");
+                "http://localhost:4144/callback");
 
         // init spotify status variables
         String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);

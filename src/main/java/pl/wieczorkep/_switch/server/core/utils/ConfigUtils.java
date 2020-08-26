@@ -116,6 +116,10 @@ public final class ConfigUtils {
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, "");
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE, "");
+        defaultProperties.setProperty(SPOTIFY_HTTPS_PORT, "4144");
+        defaultProperties.setProperty(SPOTIFY_HTTPS_IP, "0.0.0.0");
+        defaultProperties.setProperty(SPOTIFY_HTTPS_HOSTNAME, "rpi.switch.zsi.kielce.pl");
+        defaultProperties.setProperty(SPOTIFY_HTTPS_ALGORITHM, "TLSv1.2");
         return defaultProperties;
     }
 }

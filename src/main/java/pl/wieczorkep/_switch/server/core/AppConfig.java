@@ -50,6 +50,10 @@ public class AppConfig {
         return props.getProperty(key);
     }
 
+    public String getOrDefault(@NotNull String key, String def) {
+        return props.getProperty(key, def);
+    }
+
     private void put(@NonNull String key, String value, boolean replace) {
         if (!replace && props.get(key) != null) {
             throw new IllegalStateException("config already contains key " + key);
