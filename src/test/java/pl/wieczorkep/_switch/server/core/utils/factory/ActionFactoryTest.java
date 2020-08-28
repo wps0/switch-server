@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import pl.wieczorkep._switch.server.core.Action;
 import pl.wieczorkep._switch.server.core.utils.ActionFactory;
+import pl.wieczorkep._switch.server.core.utils.FileSystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,7 @@ class ActionFactoryTest {
 
         // then
         assertThrows(IOException.class, () ->
-                actionFactory.createActionFile(exampleAction, actionsDir)
+                FileSystemUtils.createActionFile(exampleAction, actionsDir)
         );
     }
 
@@ -70,7 +71,7 @@ class ActionFactoryTest {
         );
 
         // when
-        Optional<File> actionFileOptional = actionFactory.createActionFile(exampleAction, container);
+        Optional<File> actionFileOptional = FileSystemUtils.createActionFile(exampleAction, container);
         File actionFile = actionFileOptional.orElse(null);
 
         // then

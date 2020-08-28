@@ -29,8 +29,8 @@ public class ActionExecutorThread extends Thread {
             successful = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
 
         } catch (InterruptedException e) {
-            LOGGER.debug("Action " + targetAction.getActionId() + " was interrupted: " + e.getLocalizedMessage());
-            LOGGER.warn(e);
+            LOGGER.info("Action " + targetAction.getActionId() + " was interrupted: " + e.getLocalizedMessage());
+            LOGGER.debug(e);
         } catch (Exception e) {
             LOGGER.error("Failed to execute action " + targetAction.getActionId() + ": " + e.getLocalizedMessage());
             LOGGER.error(e);

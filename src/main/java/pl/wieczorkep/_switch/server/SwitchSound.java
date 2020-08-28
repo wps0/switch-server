@@ -13,7 +13,6 @@ public class SwitchSound {
     @Getter @NonNull
     private final SoundServer soundServerInstance;
 
-    // TODO: arguments handling
     public static void main(String[] args) {
         // set logger level to Level.ALL for debug purposes
         Configurator.setRootLevel(Level.ALL);
@@ -32,6 +31,6 @@ public class SwitchSound {
         // run server
         LOGGER.info("Running the server...");
         soundServerInstance.run();
-        LOGGER.info("The server finished execution.");
+        LOGGER.info("Server started.");
     }
 }

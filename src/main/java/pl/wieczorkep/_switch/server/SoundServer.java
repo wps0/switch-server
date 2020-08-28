@@ -8,7 +8,7 @@ import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
 import pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway;
 import pl.wieczorkep._switch.server.integration.spotify.SpotifyMacros;
 
-import java.nio.file.FileSystemException;
+import java.io.IOException;
 
 import static pl.wieczorkep._switch.server.Constants.*;
 
@@ -33,16 +33,30 @@ public class SoundServer {
         concurrencyManager.init(this);
     }
 
-    private void initConfig() throws FileSystemException {
+    private void initConfig() throws IOException {
+        LOGGER.info("Initializing config utils...");
         config.init();
         ConfigUtils.initializeConfig(this);
     }
 
     private void initSpotifyIntegration() {
-        // TODO: add www server for token obtaining purposes
-        spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
-                config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
-                "http://localhost/");
+        LOGGER.info("Initializing spotify integration...");
+
+        String appSecret = config.get(ACTION_SPOTIFY_APPSECRET);
+        String appId = config.get(ACTION_SPOTIFY_APPID);
+        String authScopes = config.get(ACTION_SPOTIFY_AUTHSCOPES);
+        if (appSecret == null || appSecret.isBlank()) {
+            throw new IllegalArgumentException("spotify app secret cannot be blank");
+        }
+        if (appId == null || appId.isBlank()) {
+            throw new IllegalArgumentException("spotify app id cannot be blank");
+        }
+        if (authScopes == null || authScopes.isBlank()) {
+            throw new IllegalArgumentException("spotify auth scopes cannot be blank");
+        }
+
+        String callbackUrl = String.format("http://%s:%d/callback", config.get(SPOTIFY_HOSTNAME), Integer.parseInt(config.get(SPOTIFY_HTTPS_PORT)));
+        spotifyApiGateway = new SpotifyApiGateway(this, appId, appSecret, authScopes, callbackUrl);
 
         // init spotify status variables
         String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);
@@ -54,13 +68,18 @@ public class SoundServer {
             spotifyApiGateway.setValidity(Integer.parseInt(lastRefresh));
         }
 
-        LOGGER.info(spotifyApiGateway.getAuthUrl());
-        spotifyApiGateway.setClientCredentials(config.get(ACTION_SPOTIFY_CLIENT_TOKEN), config.get(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));
+        try {
+            spotifyApiGateway.setClientCredentials(config.get(ACTION_SPOTIFY_CLIENT_TOKEN), config.get(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));
+        } catch (NullPointerException e) {
+            LOGGER.warn("Either spotify client token or refresh token are missing");
+            LOGGER.info("You can obtain the tokens at " + spotifyApiGateway.getAuthUrl());
+        }
 
         String clientTmpCode = config.get(ACTION_SPOTIFY_CLIENT_TMPCODE);
         if (clientTmpCode != null && !clientTmpCode.isEmpty()) {
             spotifyApiGateway.exchangeAccessCodeToAuthToken(clientTmpCode);
             config.put(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
         }
+        LOGGER.info("Spotify integration initialized.");
     }
 }

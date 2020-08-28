@@ -9,7 +9,7 @@ import pl.wieczorkep._switch.server.integration.spotify.model.Devices;
 import java.net.URI;
 import java.net.http.HttpResponse;
 
-import static pl.wieczorkep._switch.server.Constants.SPOTIFY_API_ENDPOINT;
+import static pl.wieczorkep._switch.server.Constants.CONST_SPOTIFY_API_ENDPOINT;
 import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.AuthMethod.BEARER;
 import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.RequestMethod.*;
 
@@ -23,7 +23,7 @@ public class SpotifyMacros {
      * Player endpoint.
      */
     public static class Player {
-        public static final String API_PREFIX = SPOTIFY_API_ENDPOINT + "/me/player";
+        public static final String API_PREFIX = CONST_SPOTIFY_API_ENDPOINT + "/me/player";
 
         private Player() {}
 
