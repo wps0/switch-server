@@ -4,8 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.net.httpserver.HttpServer;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SoundServer;
@@ -27,14 +26,14 @@ public class SpotifyApiGateway {
     private final String appClientSecret;
     private final String appScopes;
     private final String appCallbackUrl;
-    private final SoundServer server;
-    private HttpServer httpsServer;
     private String authToken;
     private String refreshToken;
     @Getter @Setter
     private int validity;
     @Getter @Setter
     private long lastRefresh;
+    private final SoundServer server;
+    private HttpServer httpsServer;
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .build();
@@ -45,6 +44,7 @@ public class SpotifyApiGateway {
         this.appClientSecret = appClientSecret;
         this.appScopes = appScopes.replace(",", "%20");
         this.appCallbackUrl = appCallbackUrl;
+        this.authToken = "";
         this.validity = -1;
         this.lastRefresh = -1;
     }
@@ -54,13 +54,19 @@ public class SpotifyApiGateway {
      * Try to read from config spotify client access token. If such token doesn't exist, nothing'll happen.
      */
     public void setClientCredentials(String authToken, String refreshToken) {
-        if (this.refreshToken != null && !this.refreshToken.isEmpty()) {
+        if (this.refreshToken != null && !this.refreshToken.isBlank()) {
             throw new SecurityException("cannot modify refresh token");
+        }
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new NullPointerException("refresh token cannot be null");
         }
         this.refreshToken = refreshToken;
 
-        if (this.authToken != null && !this.authToken.isEmpty()) {
+        if (this.authToken != null && !this.authToken.isBlank()) {
             throw new SecurityException("cannot modify auth token");
+        }
+        if (authToken == null || authToken.isBlank()) {
+            throw new NullPointerException("auth token cannot be null");
         }
         this.authToken = authToken;
     }
@@ -74,8 +80,8 @@ public class SpotifyApiGateway {
      */
     public String getAuthUrl() {
         // init http server to save user's time
-        if (httpsServer == null) {
-            startHttpsServer();
+        if (httpsServer == null && startHttpsServer()) {
+            LOGGER.info("Failed to start http(s) server. Token has to be acquired manually.");
         }
         return getAuthUrl(appCallbackUrl);
     }
@@ -87,12 +93,13 @@ public class SpotifyApiGateway {
                 .concat("&scope=").concat(appScopes);
     }
 
-    /**
+     /**
      * Exchanges access code to auth token.
      * @param accessCode User access code received from the request to {@link #getAuthUrl()}
      */
     public void exchangeAccessCodeToAuthToken(final String accessCode) {
-        makeSpotifyApiRequest(GrantType.AUTH_CODE,  "&code=" + accessCode + "&redirect_uri=http://localhost/");
+        // TODO: mitigate URL injection
+        makeSpotifyApiRequest(GrantType.AUTH_CODE, String.format("&code=%s&redirect_uri=%s", accessCode, appCallbackUrl));
     }
 
     public void refreshToken() {
@@ -153,11 +160,11 @@ public class SpotifyApiGateway {
         HttpResponse<String> response = null;
         try {
             response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response == null) {
-                throw new NullPointerException("response cannot be null");
-            }
         } catch (Exception e) {
             LOGGER.error("Failed to make Spotify API refresh request", e);
+        }
+        if (response == null) {
+            throw new NullPointerException("response cannot be null");
         }
         LOGGER.debug(String.format("Spotify API request returned code %d (response: %s)", response.statusCode(), response.body()));
 
@@ -165,6 +172,8 @@ public class SpotifyApiGateway {
     }
 
     protected void makeSpotifyApiRequest(final GrantType grantType, final String additionalArguments) {
+        // Be sure token doesn't expire a couple of seconds before our calculation result.
+        long beforeRefresh = Instant.now().getEpochSecond();
         // POST to the API_ENDPOINT_REFRESH (probably https://accounts.spotify.com/api/token)
         HttpResponse<String> refreshResponse = makeRequest(URI.create(CONST_SPOTIFY_AUTH_ENDPOINT_REFRESH),
                 "grant_type=" + grantType + additionalArguments, "", RequestMethod.POST, BASIC);
@@ -180,16 +189,15 @@ public class SpotifyApiGateway {
         JsonObject responseJson = JsonParser.parseString(refreshResponse.body()).getAsJsonObject();
         LOGGER.trace(format("Received JSON: %s", responseJson));
 
-        // TODO: czy to tak zadziała?
         setAuthToken(responseJson.get("access_token").getAsString());
         if (grantType == GrantType.AUTH_CODE) {
             setRefreshToken(responseJson.get("refresh_token").getAsString());
         }
         // from the api we get validity in seconds
         this.validity = responseJson.get("expires_in").getAsInt();
-        this.lastRefresh = Instant.now().getEpochSecond();
+        this.lastRefresh = beforeRefresh;
         // update config
-        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_LAST_REFRESH, lastRefresh);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_LAST_REFRESH, beforeRefresh);
         server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY, validity);
 
         LOGGER.info(format("Access code to auth token successfully exchanged! Validity: %d seconds.", validity));
@@ -207,7 +215,7 @@ public class SpotifyApiGateway {
 
     private boolean startHttpsServer() {
         if (httpsServer != null) {
-            throw new IllegalStateException("https server is not null (was previously started)");
+            throw new IllegalStateException("Https server is not null (was previously started)");
         }
         try {
             httpsServer = HttpServer.create();
@@ -222,8 +230,6 @@ public class SpotifyApiGateway {
         String ip = server.getConfig().get(SPOTIFY_HTTPS_IP);
         String hostname = server.getConfig().get(SPOTIFY_HTTPS_HOSTNAME);
         InetSocketAddress inetSAddr = new InetSocketAddress(ip, port);
-
-        // TODO: moze jakies one-time password?
 
         // queue only up to 10 incoming tcp connection if server is busy processing requests, other will probably
         //  be ignored
@@ -258,12 +264,18 @@ public class SpotifyApiGateway {
 //        HttpsConfigurator httpsConf = new HttpsConfigurator()
 
         // STOPSHIP: 24.08.2020 Dokończyć pisanie tego http handlera, moze zrobić mu plik osobny. Może przerzucić cały ten serwer do pliku osobnego (useless chyba/>?) 
-        httpsServer.createContext(CONST_SPOTIFY_HTTPS_ROOT_PATH, new CallbackHttpHandler(hostname));
+        httpsServer.createContext(CONST_SPOTIFY_HTTPS_ROOT_PATH, new CallbackHttpHandler(hostname, this));
 
         LOGGER.info("Starting temporary http(s) server at " + httpsServer.getAddress());
         httpsServer.start();
 
         return true;
+    }
+
+    @Synchronized
+    public void stopServer() {
+        LOGGER.info("Stopping temporary spotify web server...");
+        httpsServer.stop(1);
     }
 
     enum GrantType {

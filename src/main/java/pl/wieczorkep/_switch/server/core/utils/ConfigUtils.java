@@ -41,6 +41,10 @@ public final class ConfigUtils {
             // BEGIN config file
             if (!configFile.exists()) {
                 status &= configFile.createNewFile();
+                // Set restricted file permissions on newly created config files.
+                if (configFile.exists()) {
+                    FileSystemUtils.setFilePermissions(configFile);
+                }
 
                 @Cleanup
                 BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
@@ -80,8 +84,7 @@ public final class ConfigUtils {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error(e.toString());
+            LOGGER.error(e);
         }
 
         // when the creation failed, throw new exception

@@ -31,7 +31,7 @@ public class SwitchSound {
         soundServerInstance.init();
         // run server
         LOGGER.info("Running the server...");
-//        soundServerInstance.run();
+        soundServerInstance.run();
         LOGGER.info("Server started.");
     }
 }

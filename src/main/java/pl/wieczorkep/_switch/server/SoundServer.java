@@ -34,15 +34,28 @@ public class SoundServer {
     }
 
     private void initConfig() throws FileSystemException {
+        LOGGER.info("Initializing config utils...");
         config.init();
         ConfigUtils.initializeConfig(this);
     }
 
     private void initSpotifyIntegration() {
-        // TODO: add www server for token obtaining purposes
-        spotifyApiGateway = new SpotifyApiGateway(this, config.get(ACTION_SPOTIFY_APPID),
-                config.get(ACTION_SPOTIFY_APPSECRET), config.get(ACTION_SPOTIFY_AUTHSCOPES),
-                "http://localhost:4144/callback");
+        LOGGER.info("Initializing spotify integration...");
+
+        String appSecret = config.get(ACTION_SPOTIFY_APPSECRET);
+        String appId = config.get(ACTION_SPOTIFY_APPID);
+        String authScopes = config.get(ACTION_SPOTIFY_AUTHSCOPES);
+        if (appSecret == null || appSecret.isBlank()) {
+            throw new IllegalArgumentException("spotify app secret cannot be blank");
+        }
+        if (appId == null || appId.isBlank()) {
+            throw new IllegalArgumentException("spotify app id cannot be blank");
+        }
+        if (authScopes == null || authScopes.isBlank()) {
+            throw new IllegalArgumentException("spotify auth scopes cannot be blank");
+        }
+
+        spotifyApiGateway = new SpotifyApiGateway(this, appId, appSecret, authScopes, "http://localhost:4144/callback");
 
         // init spotify status variables
         String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);
@@ -54,8 +67,12 @@ public class SoundServer {
             spotifyApiGateway.setValidity(Integer.parseInt(lastRefresh));
         }
 
-        LOGGER.info(spotifyApiGateway.getAuthUrl());
-        spotifyApiGateway.setClientCredentials(config.get(ACTION_SPOTIFY_CLIENT_TOKEN), config.get(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));
+        try {
+            spotifyApiGateway.setClientCredentials(config.get(ACTION_SPOTIFY_CLIENT_TOKEN), config.get(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH));
+        } catch (NullPointerException e) {
+            LOGGER.warn("Either spotify client token or refresh token are missing");
+            LOGGER.info("You can obtain the tokens at " + spotifyApiGateway.getAuthUrl());
+        }
 
         String clientTmpCode = config.get(ACTION_SPOTIFY_CLIENT_TMPCODE);
         if (clientTmpCode != null && !clientTmpCode.isEmpty()) {
