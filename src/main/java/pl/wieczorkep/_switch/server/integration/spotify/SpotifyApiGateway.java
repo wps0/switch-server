@@ -263,9 +263,7 @@ public class SpotifyApiGateway {
         }*/
 //        HttpsConfigurator httpsConf = new HttpsConfigurator()
 
-        // STOPSHIP: 24.08.2020 Dokończyć pisanie tego http handlera, moze zrobić mu plik osobny. Może przerzucić cały ten serwer do pliku osobnego (useless chyba/>?) 
-        httpsServer.createContext(CONST_SPOTIFY_HTTPS_ROOT_PATH, new CallbackHttpHandler(hostname, this));
-
+        httpsServer.createContext(CONST_SPOTIFY_HTTPS_ROOT_PATH, new CallbackHttpHandler(this));
         LOGGER.info("Starting temporary http(s) server at " + httpsServer.getAddress());
         httpsServer.start();
 

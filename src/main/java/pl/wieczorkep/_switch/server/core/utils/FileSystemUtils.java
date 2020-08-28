@@ -13,29 +13,30 @@ public final class FileSystemUtils {
 
 
     public static Optional<File> createSpotifyActionFile(@NonNull Action fromAction, @NonNull File actionsDir) throws IOException {
+        final String spotifySpecific = "# Spotify action specific\n";
         Optional<File> fileOptional = createActionFile(fromAction, actionsDir);
         File actionFile = fileOptional.orElseThrow();
         // Append to created actions config file spotify action specific parameters
         @Cleanup FileWriter writer = new FileWriter(actionFile, true);
         writer.append("#\n");
-        writer.append("# Spotify action specific\n");
+        writer.append(spotifySpecific);
         writer.append("# Duration of the playback (in minutes)\n");
         writer.append("#duration=5\n");
 
         writer.append("#\n");
-        writer.append("# Spotify action specific\n");
+        writer.append(spotifySpecific);
         writer.append("# Device id on which the action will be performed. If not supplied, the user’s currently\n");
         writer.append("#  active device is the target. Something like:\n");
         writer.append("#deviceId=t6f1yiBu3hjn2k\n");
 
         writer.append("#\n");
-        writer.append("# Spotify action specific\n");
+        writer.append(spotifySpecific);
         writer.append("# Spotify URI of the context to play. Valid contexts are albums, artists, playlists.\n");
         writer.append("#  If not supplied, playback will start from recently stopped place.\n");
         writer.append("#contextUri=spotify:album:1Je1IMUlBXcx1Fz0WE7oPT\n");
 
         writer.append("#\n");
-        writer.append("# Spotify action specific\n");
+        writer.append(spotifySpecific);
         writer.append("# Indicates from where in the context playback should start. Only available when context_uri\n");
         writer.append("#  corresponds to an album or playlist object.\n");
         writer.append("# Default: 0 (start from the beginning of a playlist).\n");

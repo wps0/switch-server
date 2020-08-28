@@ -17,7 +17,6 @@ import java.util.Map;
 @Log4j2
 public class CallbackHttpHandler implements HttpHandler {
     private String password;
-    private final String hostname;
     private final SpotifyApiGateway spotifyApi;
     // paskudnie to jest zrobione. Na pewno da się sporo optymalniej, po co hash mapa
     private static final HashMap<Integer, String> responseCodes = new HashMap<>(Map.ofEntries(
@@ -29,8 +28,7 @@ public class CallbackHttpHandler implements HttpHandler {
             new SimpleEntry<>(500, "<h1>500 Internal Server Error</h1>")
     ));
 
-    public CallbackHttpHandler(String hostname, SpotifyApiGateway spotifyApi) {
-        this.hostname = hostname;
+    public CallbackHttpHandler(SpotifyApiGateway spotifyApi) {
         this.spotifyApi = spotifyApi;
         this.password = Utils.generatePassword(32);
         LOGGER.info(String.format("Make sure to manually insert one-time password string to your request (otherwise you" +
