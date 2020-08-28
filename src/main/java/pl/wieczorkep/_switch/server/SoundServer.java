@@ -8,7 +8,7 @@ import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
 import pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway;
 import pl.wieczorkep._switch.server.integration.spotify.SpotifyMacros;
 
-import java.nio.file.FileSystemException;
+import java.io.IOException;
 
 import static pl.wieczorkep._switch.server.Constants.*;
 
@@ -33,7 +33,7 @@ public class SoundServer {
         concurrencyManager.init(this);
     }
 
-    private void initConfig() throws FileSystemException {
+    private void initConfig() throws IOException {
         LOGGER.info("Initializing config utils...");
         config.init();
         ConfigUtils.initializeConfig(this);
@@ -55,7 +55,8 @@ public class SoundServer {
             throw new IllegalArgumentException("spotify auth scopes cannot be blank");
         }
 
-        spotifyApiGateway = new SpotifyApiGateway(this, appId, appSecret, authScopes, "http://localhost:4144/callback");
+        String callbackUrl = String.format("http://%s:%d/callback", config.get(SPOTIFY_HOSTNAME), Integer.parseInt(config.get(SPOTIFY_HTTPS_PORT)));
+        spotifyApiGateway = new SpotifyApiGateway(this, appId, appSecret, authScopes, callbackUrl);
 
         // init spotify status variables
         String validity = config.get(ACTION_SPOTIFY_CLIENT_TOKEN_VALIDITY);
@@ -79,5 +80,6 @@ public class SoundServer {
             spotifyApiGateway.exchangeAccessCodeToAuthToken(clientTmpCode);
             config.put(ACTION_SPOTIFY_CLIENT_TMPCODE, "");
         }
+        LOGGER.info("Spotify integration initialized.");
     }
 }

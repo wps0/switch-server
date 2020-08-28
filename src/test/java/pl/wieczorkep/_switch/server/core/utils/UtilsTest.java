@@ -48,4 +48,38 @@ class UtilsTest {
             assertEquals(len, password.length());
         }
     }
+
+    @Test
+    void shouldNotModifyNonSpecialString() {
+        // given
+        String query = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        String expected = query;
+        // when
+        String result = Utils.stripQuery(query);
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldStripSpecialCharsString() {
+        // given
+        String query = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}:|<>?[];'',./-=";
+        String expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*_.-";
+        // when
+        String result = Utils.stripQuery(query);
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldAggressivelyStripSpecialCharsString() {
+        // given
+        String query = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}:|<>?[];'',./-=";
+        String expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
+        // when
+        String result = Utils.stripQuery(query, true);
+        // then
+        assertEquals(expected, result);
+    }
+
 }

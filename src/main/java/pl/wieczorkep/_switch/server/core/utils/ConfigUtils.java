@@ -17,7 +17,7 @@ import static pl.wieczorkep._switch.server.core.utils.FileSystemUtils.createSpot
 public final class ConfigUtils {
     private ConfigUtils() {}
 
-    public static void initializeConfig(SoundServer soundServer) throws FileSystemException {
+    public static void initializeConfig(SoundServer soundServer) throws IOException {
         // init
         File configRoot = new File(soundServer.getConfig().get(CONFIG_DIR));
         File songsDir = new File(soundServer.getConfig().get(SONGS_DIR));
@@ -37,55 +37,49 @@ public final class ConfigUtils {
             status &= actionsDir.mkdir();
 
         // file presence checks
-        try {
-            // BEGIN config file
-            if (!configFile.exists()) {
-                status &= configFile.createNewFile();
-                // Set restricted file permissions on newly created config files.
-                if (configFile.exists()) {
-                    FileSystemUtils.setFilePermissions(configFile);
-                }
-
-                @Cleanup
-                BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
-                getDefaultConfig().store(configOutputStream, "The main config file.\nRefer to siema for siema");
-
-            } else {
-                loadConfig(soundServer.getConfig());
+        // BEGIN config file
+        if (!configFile.exists()) {
+            status &= configFile.createNewFile();
+            // Set restricted file permissions on newly created config files.
+            if (configFile.exists()) {
+                FileSystemUtils.setFilePermissions(configFile);
             }
-            // END config file
 
-            // BEGIN example actions file
-            File exampleActionsFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "action.example");
-            if (!exampleActionsFile.exists()) {
-                ActionFactory actionFactory = new ActionFactory();
-                actionFactory.createActionFile(soundServer.getConfig());
-            }
-            File exampleSpotifyActionFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "spotify-action.example");
-            if (!exampleSpotifyActionFile.exists()) {
-                createSpotifyActionFile(ActionFactory.createExampleSpotifyAction(), new File(soundServer.getConfig().get(ACTIONS_DIR)));
-                }
-            // END example actions file
+            @Cleanup
+            BufferedOutputStream configOutputStream = new BufferedOutputStream(new FileOutputStream(configFile));
+            getDefaultConfig().store(configOutputStream, "The main config file.\nRefer to siema for siema");
 
-            // BEGIN actions file
-            if (!actionsFile.exists()) {
-                status &= actionsFile.createNewFile();
-
-                @Cleanup FileWriter registerWriter = new FileWriter(actionsFile);
-                registerWriter.write("# Each action file has to be registered here\n");
-                registerWriter.write("# Example:\n");
-                registerWriter.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
-                registerWriter.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
-                registerWriter.write("active=");
-            } else {
-                loadActions(soundServer.getConfig());
-            }
-            // END actions file
-
-
-        } catch (IOException e) {
-            LOGGER.error(e);
+        } else {
+            loadConfig(soundServer.getConfig());
         }
+        // END config file
+
+        // BEGIN example actions file
+        File exampleActionsFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "action.example");
+        if (!exampleActionsFile.exists()) {
+            ActionFactory actionFactory = new ActionFactory();
+            actionFactory.createActionFile(soundServer.getConfig());
+        }
+        File exampleSpotifyActionFile = new File(soundServer.getConfig().get(ACTIONS_DIR) + File.separatorChar + "spotify-action.example");
+        if (!exampleSpotifyActionFile.exists()) {
+            createSpotifyActionFile(ActionFactory.createExampleSpotifyAction(), new File(soundServer.getConfig().get(ACTIONS_DIR)));
+        }
+        // END example actions file
+
+        // BEGIN actions file
+        if (!actionsFile.exists()) {
+            status &= actionsFile.createNewFile();
+
+            @Cleanup FileWriter registerWriter = new FileWriter(actionsFile);
+            registerWriter.write("# Each action file has to be registered here\n");
+            registerWriter.write("# Example:\n");
+            registerWriter.write("# active=lessons,breaks,weather,szczesliwynumerek\n");
+            registerWriter.write("# This example registers the files named lessons.action, breaks.actions etc.\n");
+            registerWriter.write("active=");
+        } else {
+            loadActions(soundServer.getConfig());
+        }
+        // END actions file
 
         // when the creation failed, throw new exception
         if (!status) {
@@ -121,7 +115,7 @@ public final class ConfigUtils {
         defaultProperties.setProperty(ACTION_SPOTIFY_CLIENT_DEFAULTDEVICE, "");
         defaultProperties.setProperty(SPOTIFY_HTTPS_PORT, "4144");
         defaultProperties.setProperty(SPOTIFY_HTTPS_IP, "0.0.0.0");
-        defaultProperties.setProperty(SPOTIFY_HTTPS_HOSTNAME, "rpi.switch.zsi.kielce.pl");
+        defaultProperties.setProperty(SPOTIFY_HOSTNAME, "localhost");
         defaultProperties.setProperty(SPOTIFY_HTTPS_ALGORITHM, "TLSv1.2");
         return defaultProperties;
     }

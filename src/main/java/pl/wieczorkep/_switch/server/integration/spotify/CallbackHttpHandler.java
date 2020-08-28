@@ -1,8 +1,7 @@
 package pl.wieczorkep._switch.server.integration.spotify;
 
 import com.sun.net.httpserver.*;
-import lombok.NonNull;
-import lombok.Synchronized;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import pl.wieczorkep._switch.server.core.utils.Utils;
 
@@ -11,22 +10,20 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
-import java.util.Map;
 
 @Log4j2
 public class CallbackHttpHandler implements HttpHandler {
     private String password;
     private final SpotifyApiGateway spotifyApi;
-    // paskudnie to jest zrobione. Na pewno da się sporo optymalniej, po co hash mapa
-    private static final HashMap<Integer, String> responseCodes = new HashMap<>(Map.ofEntries(
+    @Getter
+    private static final SimpleEntry<Integer, String>[] responseCodes = new SimpleEntry[] {
             new SimpleEntry<>(200, "<h1>200 OK</h1>"),
             new SimpleEntry<>(400, "<h1>400 Bad Request</h1>"),
             new SimpleEntry<>(401, "<h1>401 Unauthorized</h1>"),
             new SimpleEntry<>(404, "<h1>404 Not Found</h1>No context found for request"),
             new SimpleEntry<>(405, "<h1>405 Method Not Allowed</h1>Request method not allowed"),
             new SimpleEntry<>(500, "<h1>500 Internal Server Error</h1>")
-    ));
+    };
 
     public CallbackHttpHandler(SpotifyApiGateway spotifyApi) {
         this.spotifyApi = spotifyApi;
@@ -42,8 +39,8 @@ public class CallbackHttpHandler implements HttpHandler {
         final String logPrefix = "Connection from " + remoteHost.getAddress() + ":" + remoteHost.getPort() + ": ";
 
         URI requestUri = httpExchange.getRequestURI();
-        // check request url
-        if (!requestUri.getPath().equalsIgnoreCase("/callback")) {
+        // Check request url. Spotify api is case-sensitive
+        if (!requestUri.getPath().equals("/callback")) {
             LOGGER.info(logPrefix + "404 Not Found");
             respondWithCode(httpExchange, 404);
             return;
@@ -130,7 +127,7 @@ public class CallbackHttpHandler implements HttpHandler {
             body.readAllBytes();
         }
         setHeaders(httpExchange);
-        String responseStr = responseCodes.get(code);
+        String responseStr = findResponseForCode(code);
         httpExchange.sendResponseHeaders(code, responseStr.length());
         httpExchange.getResponseBody().write(responseStr.getBytes());
         httpExchange.getResponseBody().close();
@@ -143,5 +140,19 @@ public class CallbackHttpHandler implements HttpHandler {
         //  response MUST always go through validation with the origin server first before using it.
         responseHeaders.add("Cache-Control", "no-cache");
         responseHeaders.add("Content-Type", "text/html");
+    }
+
+    public String findResponseForCode(int code) {
+        int b = 0;
+        int e = responseCodes.length - 1;
+        while (b < e) {
+            int center = (b + e) / 2;
+            if (responseCodes[center].getKey() < code) {
+                b = center + 1;
+            } else {
+                e = center;
+            }
+        }
+        return responseCodes[b].getValue();
     }
 }

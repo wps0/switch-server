@@ -18,6 +18,7 @@ import java.util.Base64;
 
 import static java.lang.String.format;
 import static pl.wieczorkep._switch.server.Constants.*;
+import static pl.wieczorkep._switch.server.core.utils.Utils.stripQuery;
 import static pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway.AuthMethod.BASIC;
 
 @Log4j2
@@ -86,7 +87,7 @@ public class SpotifyApiGateway {
         return getAuthUrl(appCallbackUrl);
     }
 
-    private String getAuthUrl(String callbackUrl) {
+    public String getAuthUrl(String callbackUrl) {
         return CONST_SPOTIFY_AUTH_ENDPOINT_AUTHORIZE.concat("?client_id=").concat(appClientId)
                 .concat("&response_type=code")
                 .concat("&redirect_uri=").concat(callbackUrl)
@@ -98,8 +99,8 @@ public class SpotifyApiGateway {
      * @param accessCode User access code received from the request to {@link #getAuthUrl()}
      */
     public void exchangeAccessCodeToAuthToken(final String accessCode) {
-        // TODO: mitigate URL injection
-        makeSpotifyApiRequest(GrantType.AUTH_CODE, String.format("&code=%s&redirect_uri=%s", accessCode, appCallbackUrl));
+        makeSpotifyApiRequest(GrantType.AUTH_CODE, String.format("&code=%s&redirect_uri=%s",
+                stripQuery(accessCode, true), appCallbackUrl));
     }
 
     public void refreshToken() {
@@ -205,12 +206,12 @@ public class SpotifyApiGateway {
 
     private void setAuthToken(final String newToken) {
         this.authToken = newToken;
-        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN, newToken);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN, this.authToken);
     }
 
     private void setRefreshToken(final String newToken) {
         this.refreshToken = newToken;
-        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, newToken);
+        server.getConfig().put(ACTION_SPOTIFY_CLIENT_TOKEN_REFRESH, this.refreshToken);
     }
 
     private boolean startHttpsServer() {
@@ -228,7 +229,7 @@ public class SpotifyApiGateway {
         int port = Integer.parseInt(server.getConfig().get(SPOTIFY_HTTPS_PORT));
         int backlog = Integer.parseInt(server.getConfig().getOrDefault(SPOTIFY_HTTPS_BACKLOG, "0"));
         String ip = server.getConfig().get(SPOTIFY_HTTPS_IP);
-        String hostname = server.getConfig().get(SPOTIFY_HTTPS_HOSTNAME);
+        String hostname = server.getConfig().get(SPOTIFY_HOSTNAME);
         InetSocketAddress inetSAddr = new InetSocketAddress(ip, port);
 
         // queue only up to 10 incoming tcp connection if server is busy processing requests, other will probably
