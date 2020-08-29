@@ -54,6 +54,26 @@ public class AppConfig {
         return props.getProperty(key, def);
     }
 
+    /**
+     * Finds all properties that match given prefix path. For example:
+     * <pre>{@code getPropertiesInPath("config.fs");}</pre> will return "config.fs.dir", but not "config.fss.dir".
+     * Right now multiple matching (eg. "config.*.dir") is not supported.
+     * @param path Path of keys in config.
+     * @return Properties matching given path.
+     */
+    @NonNull
+    public Properties getPropertiesInPath(@NonNull String path) {
+        Enumeration<?> propNames = props.propertyNames();
+        Properties result = new Properties();
+        while (propNames.hasMoreElements()) {
+            String key = (String) propNames.nextElement();
+            if (key.length() >= path.length() && key.startsWith(path)) {
+                result.put(key, props.get(key));
+            }
+        }
+        return result;
+    }
+
     private void put(@NonNull String key, String value, boolean replace) {
         if (!replace && props.get(key) != null) {
             throw new IllegalStateException("config already contains key " + key);

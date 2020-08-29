@@ -1,5 +1,6 @@
 package pl.wieczorkep._switch.server.core.executor;
 
+import lombok.NonNull;
 import pl.wieczorkep._switch.server.core.AudioPlayer;
 
 import java.util.Properties;
@@ -12,5 +13,10 @@ public class SoundExecutor implements ActionExecutor {
         audioPlayer.main(arguments.getProperty("songPath"));
 
         return false;
+    }
+
+    @Override
+    public @NonNull Properties getRelatedProperties() {
+        return null;
     }
 }

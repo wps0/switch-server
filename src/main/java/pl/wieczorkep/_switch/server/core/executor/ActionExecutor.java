@@ -1,5 +1,7 @@
 package pl.wieczorkep._switch.server.core.executor;
 
+import lombok.NonNull;
+
 import java.util.Properties;
 
 public interface ActionExecutor {
@@ -10,4 +12,11 @@ public interface ActionExecutor {
      * @throws InterruptedException when action execution is interrupted
      */
     public boolean execute(Properties arguments) throws InterruptedException;
+
+    /**
+     * @return {@link Properties} object containing config values related to (beginning with action-specific path) the
+     *  action.
+     */
+    @NonNull
+    public Properties getRelatedProperties();
 }
