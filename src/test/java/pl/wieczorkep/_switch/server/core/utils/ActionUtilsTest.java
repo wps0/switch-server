@@ -50,7 +50,7 @@ class ActionUtilsTest {
         // when
         String returnedDay = ActionUtils.encodeDays(days);
         // then
-        assertEquals("{F,M,SU,TH,TU,W}", returnedDay);
+        assertEquals("{F,M,SU,TH,TU,SA,W}", returnedDay);
     }
 
     @Test

@@ -144,13 +144,19 @@ public class SpotifyMacros {
      */
     public static String encode(@NotNull String args) {
         final String[] arguments = args.split("&");
-        StringBuilder json = new StringBuilder();
+        if (arguments.length <= 1) {
+            if (arguments[0].equals("")) {
+                return "{}";
+            }
+            return args;
+        }
 
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].isBlank()) {
+        StringBuilder json = new StringBuilder("{");
+        for (String argument : arguments) {
+            if (argument.isBlank()) {
                 continue;
             }
-            String[] keyValuePair = arguments[i].split("=", 2);
+            String[] keyValuePair = argument.split("=", 2);
             if (keyValuePair.length < 2) {
                 if (keyValuePair.length == 1) {
                     json.append(keyValuePair[0]);

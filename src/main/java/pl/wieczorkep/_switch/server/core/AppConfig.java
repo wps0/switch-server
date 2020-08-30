@@ -78,6 +78,10 @@ public class AppConfig {
         if (!replace && props.get(key) != null) {
             throw new IllegalStateException("config already contains key " + key);
         }
+        // Don't waste time for saving identical values
+        if (props.getProperty(key).equals(value)) {
+            return;
+        }
         props.setProperty(key, value);
         try {
             store();

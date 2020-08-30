@@ -7,6 +7,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UtilsTest {
+    private static final String ALL_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}:|<>?[];\\\"',./-=";
 
     @Test
     void given0LenShouldReturnEmptyPassword() {
@@ -63,10 +64,9 @@ class UtilsTest {
     @Test
     void shouldStripSpecialCharsString() {
         // given
-        String query = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}:|<>?[];'',./-=";
         String expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*_.-";
         // when
-        String result = Utils.stripQuery(query);
+        String result = Utils.stripQuery(ALL_CHARS);
         // then
         assertEquals(expected, result);
     }
@@ -74,10 +74,19 @@ class UtilsTest {
     @Test
     void shouldAggressivelyStripSpecialCharsString() {
         // given
-        String query = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+{}:|<>?[];'',./-=";
         String expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
         // when
-        String result = Utils.stripQuery(query, true);
+        String result = Utils.stripQuery(ALL_CHARS, true);
+        // then
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldNonAggressivelyStripSpecialCharsString() {
+        // given
+        String expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*_.-";
+        // when
+        String result = Utils.stripQuery(ALL_CHARS, false);
         // then
         assertEquals(expected, result);
     }

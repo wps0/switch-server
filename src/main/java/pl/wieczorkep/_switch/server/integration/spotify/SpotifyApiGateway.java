@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 import pl.wieczorkep._switch.server.SoundServer;
+import pl.wieczorkep._switch.server.core.AppConfig;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -81,7 +82,7 @@ public class SpotifyApiGateway {
      */
     public String getAuthUrl() {
         // init http server to save user's time
-        if (httpsServer == null && startHttpsServer()) {
+        if (httpsServer == null && !startHttpsServer()) {
             LOGGER.info("Failed to start http(s) server. Token has to be acquired manually.");
         }
         return getAuthUrl(appCallbackUrl);
@@ -127,15 +128,11 @@ public class SpotifyApiGateway {
         if (!isTokenValid() && authMethod.isAuthTokenRequired()) {
             refreshToken();
         }
-        // Has to be after refresh token method call (refresh token might update current token) and if it had happened,
-        //  the request would have failed.
-        AuthMethod.set(appClientId, appClientSecret, authToken);
-
         // HTTP refresh request to the spotify api
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .setHeader("Content-Type", "application/x-www-form-urlencoded")
-                .setHeader("Authorization", authMethod.authString());
+                .setHeader("Authorization", authMethod.authString(server.getConfig()));
 
         // Depending on request method, URI has to be created in different ways.
         switch (requestMethod) {
@@ -299,20 +296,18 @@ public class SpotifyApiGateway {
     public enum AuthMethod {
         BASIC(false) {
             @Override
-            public String authString() {
-                return "Basic " + Base64.getEncoder().encodeToString((appClientId + ":" + appClientSecret).getBytes());
+            public String authString(AppConfig appConfig) {
+                return "Basic " + Base64.getEncoder().encodeToString(
+                        (getAppClientId(appConfig) + ":" + getAppClientSecret(appConfig)).getBytes());
             }
         },
         BEARER(true) {
             @Override
-            public String authString() {
-                return "Bearer " + appAuthToken;
+            public String authString(AppConfig appConfig) {
+                return "Bearer " + getAuthToken(appConfig);
             }
         };
 
-        private static String appClientId;
-        private static String appClientSecret;
-        private static String appAuthToken;
         @Getter
         private final boolean authTokenRequired;
 
@@ -320,23 +315,30 @@ public class SpotifyApiGateway {
             this.authTokenRequired = authTokenRequired;
         }
 
-        /**
-         * Has to be called before calling any authString methods and has to be refreshed periodically
-         */
-        public static void set(@NotNull String appClientId, @NotNull String appClientSecret, @NotNull String appAuthToken) {
-            AuthMethod.appClientId = appClientId;
-            AuthMethod.appClientSecret = appClientSecret;
-            AuthMethod.appAuthToken = appAuthToken;
+        public abstract String authString(AppConfig appConfig);
 
-            if (appClientId.isEmpty()) {
+        private static String getAppClientId(AppConfig appConfig) {
+            String appClientId = appConfig.get(ACTION_SPOTIFY_APPID);
+            if (appClientId == null || appClientId.isEmpty()) {
                 throw new IllegalArgumentException(ACTION_SPOTIFY_APPID + " not set");
             }
-
-            if (appClientSecret.isEmpty()) {
-                throw new IllegalArgumentException(ACTION_SPOTIFY_APPSECRET + " not set");
-            }
+            return appClientId;
         }
 
-        public abstract String authString();
+        private static String getAppClientSecret(AppConfig appConfig) {
+            String appClientSecret = appConfig.get(ACTION_SPOTIFY_APPSECRET);
+            if (appClientSecret == null || appClientSecret.isEmpty()) {
+                throw new IllegalArgumentException(ACTION_SPOTIFY_APPSECRET + " not set");
+            }
+            return appClientSecret;
+        }
+
+        private static String getAuthToken(AppConfig appConfig) {
+            String authToken = appConfig.get(ACTION_SPOTIFY_CLIENT_TOKEN);
+            if (authToken == null || authToken.isEmpty()) {
+                throw new IllegalArgumentException(ACTION_SPOTIFY_APPSECRET + " not set");
+            }
+            return authToken;
+        }
     }
 }
