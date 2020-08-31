@@ -6,6 +6,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
+import pl.wieczorkep._switch.server.integration.spotify.SpotifyMacros;
+import pl.wieczorkep._switch.server.integration.spotify.model.Devices;
+
+import java.util.Arrays;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -28,6 +32,11 @@ public class SwitchSound {
         // init server
         LOGGER.info("Initializing server...");
         soundServerInstance.init();
+        // Show available devices
+        LOGGER.info("Active devices:");
+        Devices devices = SpotifyMacros.Player.getAvailableDevices(soundServerInstance.getSpotifyApiGateway());
+        Arrays.stream(devices.getDevices())
+                .forEach(LOGGER::info);
         // run server
         LOGGER.info("Running the server...");
         soundServerInstance.run();

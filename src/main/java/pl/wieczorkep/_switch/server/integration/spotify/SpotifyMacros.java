@@ -81,9 +81,9 @@ public class SpotifyMacros {
                 positionMs = 0;
             }
 
-            String headerArguments = "";
+            StringBuilder headerArguments = new StringBuilder();
             if (!deviceId.isBlank()) {
-                headerArguments = "device_id=".concat(deviceId);
+                headerArguments.append("device_id=").append(deviceId);
             }
 
             StringBuilder bodyArguments = new StringBuilder();
@@ -96,7 +96,7 @@ public class SpotifyMacros {
 
             LOGGER.debug(encode(bodyArguments.toString()));
 
-            return apiGateway.makeRequest(URI.create(API_PREFIX + "/play"), headerArguments, encode(bodyArguments.toString()), PUT, BEARER);
+            return apiGateway.makeRequest(URI.create(API_PREFIX + "/play"), headerArguments.toString(), encode(bodyArguments.toString()), PUT, BEARER);
         }
 
         /**
@@ -141,7 +141,9 @@ public class SpotifyMacros {
             if (arguments[0].equals("")) {
                 return "{}";
             }
-            return args;
+            if (args.split("=").length <= 1) {
+                return "\"" + args + "\"";
+            }
         }
 
         StringBuilder json = new StringBuilder("{");

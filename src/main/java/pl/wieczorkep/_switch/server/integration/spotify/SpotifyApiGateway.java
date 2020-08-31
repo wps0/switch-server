@@ -123,8 +123,6 @@ public class SpotifyApiGateway {
                                      @NotNull String bodyArguments,
                                      @NotNull RequestMethod requestMethod,
                                      @NotNull AuthMethod authMethod) {
-        LOGGER.trace(String.format("Making Spotify API request to %s (arguments: %s; body arguments: %s)", uri, headerArguments, bodyArguments));
-
         if (!isTokenValid() && authMethod.isAuthTokenRequired()) {
             refreshToken();
         }
@@ -154,6 +152,7 @@ public class SpotifyApiGateway {
 
         HttpRequest request = requestBuilder.build();
 
+        LOGGER.trace(String.format("Making Spotify API request to %s (header arguments: %s; body arguments: %s)", request.uri(), headerArguments, bodyArguments));
         // Send request
         HttpResponse<String> response = null;
         try {

@@ -121,6 +121,7 @@ public class ActionSupervisorThread implements Runnable {
         long s;
         scheduledFuture = executorService.schedule(actionExecutorThread, s = newAction.getExecutionTime().getTime(MILLISECONDS), MILLISECONDS);
 
-        LOGGER.debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction + "!");
+        LOGGER.debug("Planned (in " + Duration.ofMillis(s).toString() + ") " + newAction.getActionId() + "!");
+        LOGGER.trace(newAction.getActionId() + ": " + newAction);
     }
 }
