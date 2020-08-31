@@ -3,12 +3,12 @@ package pl.wieczorkep._switch.server.core.concurrent;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import pl.wieczorkep._switch.server.SoundServer;
 import pl.wieczorkep._switch.server.core.Action;
-import pl.wieczorkep._switch.server.core.AppConfig;
 
 @Log4j2
 public class ActionExecutorThread extends Thread {
-    private final AppConfig appConfig;
+    private final SoundServer server;
     @Getter @NonNull
     private Action targetAction;
     @Getter
@@ -16,8 +16,8 @@ public class ActionExecutorThread extends Thread {
     @Getter
     private boolean finished;
 
-    public ActionExecutorThread(AppConfig appConfig, @NonNull Action targetAction) {
-        this.appConfig = appConfig;
+    public ActionExecutorThread(SoundServer server, @NonNull Action targetAction) {
+        this.server = server;
         this.targetAction = targetAction;
     }
 
@@ -26,7 +26,8 @@ public class ActionExecutorThread extends Thread {
         try {
             LOGGER.info("Executing action " + targetAction.getActionId() + " (arguments " + targetAction.getArguments().toString() + ")");
 
-            successful = targetAction.getType().getActionExecutor().execute(targetAction.getArguments());
+            targetAction.getType().getActionExecutor().setAction(targetAction);
+            successful = targetAction.getType().getActionExecutor().execute(server);
 
         } catch (InterruptedException e) {
             LOGGER.info("Action " + targetAction.getActionId() + " was interrupted: " + e.getLocalizedMessage());
@@ -38,7 +39,7 @@ public class ActionExecutorThread extends Thread {
         } finally {
             LOGGER.info("Action " + targetAction.getActionId() + " finished its execution (arguments " + targetAction.getArguments().toString() + ")");
             finished = true;
-            appConfig.signalActionChange();
+            server.getConfig().signalActionChange();
         }
     }
 }

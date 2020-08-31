@@ -57,10 +57,8 @@ public class SpotifyMacros {
          *                   currently active device is the target.
          * @return True if the status code is equals to 204, false otherwise.
          */
-        // TODO: może gdy nie będzie się dało spauzować playbacku to volume do 0 zmniejsz
-        public static boolean pausePlayback(SpotifyApiGateway apiGateway, String deviceId) {
-            HttpResponse<String> response = apiGateway.makeRequest(URI.create(API_PREFIX + "/pause"), deviceId, "", PUT, BEARER);
-            return response.statusCode() == 204;
+        public static HttpResponse<String> pausePlayback(SpotifyApiGateway apiGateway, String deviceId) {
+            return apiGateway.makeRequest(URI.create(API_PREFIX + "/pause"), deviceId, "", PUT, BEARER);
         }
 
         /**
@@ -70,14 +68,14 @@ public class SpotifyMacros {
          * @param contextUri Optional. Spotify URI of the context to play. Valid contexts are albums, artists, playlists.
          *                   Example: "spotify:album:1Je1IMUlBXcx1Fz0WE7oPT"
          * @param offset     Optional. Indicates from where in the context playback should start. Only available when context_uri
-         *                   corresponds to an album or playlist object, or when the uris parameter is used. “position” is zero
-         *                   based and can’t be negative. Example: "offset": {"position": 5}
+         *                   corresponds to an album or playlist object, or when the uris parameter is used. “position”
+         *                   is zero based and can’t be negative. Example: "offset": {"position": 5}
          * @param positionMs Optional. Indicates from what position to start playback. Must be a positive number. Passing
          *                   in a position that is greater than the length of the track will cause the player to start
          *                   playing the next song.
          * @return True if the status code is equals to 204, false otherwise
          */
-        public static boolean startPlayback(SpotifyApiGateway apiGateway, @NotNull String deviceId, @NotNull String contextUri,
+        public static HttpResponse<String> startPlayback(SpotifyApiGateway apiGateway, @NotNull String deviceId, @NotNull String contextUri,
                                             int offset, int positionMs) {
             if (positionMs < 0) {
                 positionMs = 0;
@@ -98,8 +96,7 @@ public class SpotifyMacros {
 
             LOGGER.debug(encode(bodyArguments.toString()));
 
-            HttpResponse<String> response = apiGateway.makeRequest(URI.create(API_PREFIX + "/play"), headerArguments, encode(bodyArguments.toString()), PUT, BEARER);
-            return response.statusCode() == 204;
+            return apiGateway.makeRequest(URI.create(API_PREFIX + "/play"), headerArguments, encode(bodyArguments.toString()), PUT, BEARER);
         }
 
         /**
@@ -112,7 +109,7 @@ public class SpotifyMacros {
          *                   or 0 (if volume < 0).
          * @return True if the status code is equals to 204, false otherwise.
          */
-        public static boolean changeVolume(SpotifyApiGateway apiGateway, String deviceId, int volume) {
+        public static HttpResponse<String> changeVolume(SpotifyApiGateway apiGateway, String deviceId, int volume) {
             if (volume > 100) {
                 volume = 100;
             } else if (volume < 0) {
@@ -126,12 +123,8 @@ public class SpotifyMacros {
                 headerArguments.append("&device_id=").append(deviceId);
             }
 
-            HttpResponse<String> response = apiGateway.makeRequest(URI.create(API_PREFIX + "/volume"),
-                    headerArguments.toString(),
-                    "",
-                    PUT,
-                    BEARER);
-            return response.statusCode() == 204;
+            return apiGateway.makeRequest(URI.create(API_PREFIX + "/volume"), headerArguments.toString(),
+                    "", PUT, BEARER);
         }
     }
 

@@ -67,7 +67,7 @@ public class ActionLoader {
                             .distinct()
                             .toArray(DayOfWeek[]::new),
                     Action.Type.valueOf(actionProperties.getProperty("type", "PLAY_SOUND")),
-                    actionProperties.getProperty("typeArguments"),
+                    actionProperties,
                     actionFile.getName()
             );
         } catch (Exception e) {

@@ -25,26 +25,24 @@ public class Action implements Comparable<Action> {
     private final ExecutionTime executionTime;
     @Getter
     private final Type type;
-    private final String typeArguments;
     /**
      * Contains extracted arguments.
      * TODO: add live reload support
      */
-    private Properties arguments;
+    private final Properties arguments;
 
-    public Action(int executionHour, int executionMinute, DayOfWeek[] executionDays, Type type, String typeArguments, final @NonNull String actionId) {
-        this(actionId, new ExecutionTime(executionHour, executionMinute, executionDays), type, typeArguments);
+    public Action(int executionHour, int executionMinute, DayOfWeek[] executionDays, Type type, Properties arguments, final @NonNull String actionId) {
+        this(actionId, new ExecutionTime(executionHour, executionMinute, executionDays), type, arguments);
     }
 
     public String getRawArguments() {
-        return typeArguments;
+        return arguments.getProperty("typeArguments");
     }
 
     @NonNull
     public Properties getArguments() {
         if (arguments == null) {
-            arguments = type.getArgumentsExtractor().extract(typeArguments) // TODO: spotify action handling
-                    .orElse(new Properties());
+            return new Properties();
         }
         return arguments;
     }
@@ -69,7 +67,7 @@ public class Action implements Comparable<Action> {
         @Getter
         private final ArgumentsExtractor argumentsExtractor;
         @Getter
-        private final ActionExecutor actionExecutor;
+        private final IActionExecutor actionExecutor;
     }
 
     @RequiredArgsConstructor
@@ -128,9 +126,9 @@ public class Action implements Comparable<Action> {
         }
 
         /**
-         * Gets amount of time to the next run.
+         * Get the time span left left to the closest execution.
          *
-         * @param timeUnit the time value.
+         * @param timeUnit time unit
          * @param now      the current moment.
          * @return -1 if the closest day is null.
          */

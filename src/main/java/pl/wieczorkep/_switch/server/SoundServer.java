@@ -6,7 +6,6 @@ import pl.wieczorkep._switch.server.core.AppConfig;
 import pl.wieczorkep._switch.server.core.concurrent.ConcurrencyManager;
 import pl.wieczorkep._switch.server.core.utils.ConfigUtils;
 import pl.wieczorkep._switch.server.integration.spotify.SpotifyApiGateway;
-import pl.wieczorkep._switch.server.integration.spotify.SpotifyMacros;
 
 import java.io.IOException;
 
@@ -29,7 +28,6 @@ public class SoundServer {
     }
 
     public void run() {
-        LOGGER.info(SpotifyMacros.Player.startPlayback(spotifyApiGateway, "85a04d078a7a84537c9a1bfa6b3866431fd9deb3", "", 0, 0));
         concurrencyManager.init(this);
     }
 

@@ -1,22 +1,20 @@
 package pl.wieczorkep._switch.server.core.executor;
 
-import lombok.NonNull;
+import lombok.Setter;
+import pl.wieczorkep._switch.server.SoundServer;
+import pl.wieczorkep._switch.server.core.Action;
 import pl.wieczorkep._switch.server.core.AudioPlayer;
 
-import java.util.Properties;
+public class SoundExecutor implements IActionExecutor {
+    @Setter
+    private Action action;
 
-public class SoundExecutor implements ActionExecutor {
     @Override
-    public boolean execute(Properties arguments) throws InterruptedException {
+    public boolean execute(SoundServer server) throws InterruptedException {
         // ToDo: ... execute sound action
         AudioPlayer audioPlayer = new AudioPlayer();
-        audioPlayer.main(arguments.getProperty("songPath"));
+        audioPlayer.main(action.getArguments().getProperty("songPath"));
 
         return false;
-    }
-
-    @Override
-    public @NonNull Properties getRelatedProperties() {
-        return null;
     }
 }

@@ -117,7 +117,7 @@ public class ActionSupervisorThread implements Runnable {
 
     private void planAction(Action newAction) {
         LOGGER.debug("Planning " + newAction);
-        actionExecutorThread = new ActionExecutorThread(soundServer.getConfig(), newAction);
+        actionExecutorThread = new ActionExecutorThread(soundServer, newAction);
         long s;
         scheduledFuture = executorService.schedule(actionExecutorThread, s = newAction.getExecutionTime().getTime(MILLISECONDS), MILLISECONDS);
 
